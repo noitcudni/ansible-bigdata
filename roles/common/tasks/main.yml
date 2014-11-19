@@ -1,0 +1,33 @@
+- name: Be super double uber sure we are using UTC
+  sudo: yes
+  shell: "ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime"
+
+- name: Common things across all nodes
+  sudo: yes
+  yum: name={{item}} state=installed
+  with_items:
+    - ntp
+    - ntpdate.x86_64
+    - libselinux-python
+
+- name: Ensure ntpd is on via chkconfig
+  sudo: yes
+  shell: /sbin/chkconfig ntpd on
+
+- name: run ntpd
+  sudo: yes
+  service: name=ntpd state=started
+
+- name: Install epel yum repos
+  sudo: yes
+  copy: src={{item}} dest=/etc/yum.repos.d/{{item}} mode=0644
+  with_items:
+  - epel.repo
+  - epel.repo.key
+
+- name: Clear yum caches so stuff will not break
+  sudo: yes
+  shell: "yum clean all"
+
+#### Create system users ####
+

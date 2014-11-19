@@ -1,0 +1,20 @@
+# TODO: take to Zab about what gid and uid have already been taken.
+- name: Ensure that shinken group exists
+  sudo: yes
+  group: name=shinken state=present gid=1000
+
+- name: Ensure that shinken user exists
+  sudo: yes
+  user: group=shinken name=shinken state=present uid=1000
+
+- name: Install necessary yum packages
+  yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - python-pycurl
+    - python-setuptools
+    - python-pip
+
+- name: install shinken
+  sudo: yes
+  pip: name=shinken state=present

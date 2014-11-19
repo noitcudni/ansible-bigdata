@@ -1,0 +1,5 @@
+- hosts: Shinken
+  sudo: True
+  roles:
+    - { role: common }
+    - { role: shinken }
