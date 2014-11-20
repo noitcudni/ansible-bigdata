@@ -1,0 +1,5 @@
+webui_cfg_modules:
+  - auth-cfg-password
+
+broker_master_modules:
+  - webui

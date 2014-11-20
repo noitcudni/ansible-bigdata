@@ -18,3 +18,34 @@
 - name: install shinken
   sudo: yes
   pip: name=shinken state=present
+
+- name: initialize shinken cli
+  sudo_user: shinken
+  shell: "shinken --init"
+
+- name: install various shinken modules
+  sudo_user: shinken
+  shell: "shinken install {{item}}"
+  with_items:
+    - webui
+    - auth-cfg-password
+
+- template: src={{item}}.j2 dest=/etc/shinken/modules/{{item}}
+  sudo: yes
+  with_items:
+    - webui.cfg
+
+- template: src={{item}}.j2 dest=/etc/shinken/brokers/{{item}}
+  sudo: yes
+  with_items:
+    - broker-master.cfg
+
+- name: Ensure that shinken is running after reboot
+  sudo: yes
+  shell: /sbin/chkconfig shinken on
+
+- name: run shinken
+  sudo: yes
+  service: name=shinken state=started
+
+
