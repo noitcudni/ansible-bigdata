@@ -1,0 +1,32 @@
+- name: yum install nrpe related packages
+  yum: name={{ item }}
+  sudo: yes
+  with_items:
+    - nagios-plugins-all
+    - nrpe
+
+# The disk_info will be used in nrpe.cfg
+- name: get disk info
+  command: df /
+  register: disk_info
+- debug: var=disk_info.stdout_lines[1:] # skip the header
+
+- name: copy check_memory
+  copy: src={{ item }} dest=/usr/lib64/nagios/plugins/{{ item }} mode=755
+  sudo: yes
+  with_items:
+    - check_memory
+
+- name: setup nrpe.cfg
+  template: src={{ item }}.j2 dest=/etc/nagios/{{ item }}
+  sudo: yes
+  with_items:
+    - nrpe.cfg
+
+- name: run nrpe automatically at boot time
+  command: /sbin/chkconfig nrpe on
+  sudo: yes
+
+- name: start nrpe
+  service: name=nrpe state=started
+  sudo: yes
