@@ -1,5 +1,5 @@
 define command {
     command_name    check_load_nrpe
-    command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c "check_load"
+    command_line    $NAGIOSPLUGINSDIR$/check_nrpe -H $HOSTADDRESS$ -c "check_load"
 }
 

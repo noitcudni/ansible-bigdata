@@ -1,0 +1,23 @@
+define service{
+    host_name               {{host_name}}
+    service_description     {{service_description}}
+    check_command           {{check_command}}
+
+    max_check_attempts      {{max_check_attempts}}
+    check_interval          {{check_interval}}
+    retry_interval          {{retry_interval}}
+
+    check_period            {{check_period}} #example: 24x7
+    notification_interval   {{notication_interval}}
+    notification_period     {{notification_period}} #example: 24x7
+
+    {% if notification_options is defined %}
+    notification_options    {{notification_options}}
+    {% else %}
+    notification_options    w,c,r
+    {% endif %}
+
+    # must supply either contacts or a contact_groups
+    contacts               {{contacts}}
+}
+

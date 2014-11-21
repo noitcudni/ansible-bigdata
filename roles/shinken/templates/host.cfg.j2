@@ -1,0 +1,16 @@
+define host{
+    host_name                      {{ host_name }}
+    address                        {{ ip }}
+    check_interval                 5 #minutes
+    retry_interval                 1
+    max_check_attempts             5
+    check_period                   24x7
+    process_perf_data              0
+    retain_nonstatus_information   0
+
+    # must specify either contacts or contact_groups
+    contacts                       {{ contacts }}
+    notification_interval          30
+    notification_period            24x7
+    notification_options           d,u,r
+}
