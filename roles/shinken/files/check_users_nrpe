@@ -1,0 +1,5 @@
+define command {
+    command_name    check_total_procs_nrpe
+    command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c "check_total_procs"
+}
+
