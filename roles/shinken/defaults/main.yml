@@ -3,3 +3,5 @@ webui_cfg_modules:
 
 broker_master_modules:
   - webui
+
+generic_shinken_contact_email: dummy@placeholder.com

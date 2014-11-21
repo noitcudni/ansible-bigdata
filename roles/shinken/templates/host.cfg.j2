@@ -9,7 +9,7 @@ define host{
     retain_nonstatus_information   0
 
     # must specify either contacts or contact_groups
-    contacts                       {{ contacts }}
+    contacts                       {{ contacts |join(",") }}
     notification_interval          30
     notification_period            24x7
     notification_options           d,u,r

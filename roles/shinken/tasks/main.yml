@@ -44,12 +44,12 @@
     auth_cfg_password_is_installed.stat.exists == False
 
 - template: src={{item}}.j2 dest=/etc/shinken/modules/{{item}}
-  sudo: yes
+  sudo_user: shinken
   with_items:
     - webui.cfg
 
 - template: src={{item}}.j2 dest=/etc/shinken/brokers/{{item}}
-  sudo: yes
+  sudo_user: shinken
   with_items:
     - broker-master.cfg
 
@@ -61,4 +61,22 @@
   sudo: yes
   service: name=shinken state=started
 
+- name: Install shinken's command config files
+  sudo_user: shinken
+  copy: src={{item}} dest=/etc/shinken/commands/{{item}} mode=0644 owner=shinken group=shinken
+  with_items:
+    - check_disk_nrpe
+    - check_memory_nrpe
+    - check_total_procs_nrpe
+    - check_zombie_procs_nrpe
+    - check_users_nrpe
+    - check_load_nrpe
+
+- name: Install Shinken's contact config file
+  sudo_user: shinken
+  template: src={{item}}.j2 dest=/etc/shinken/contacts/{{item}}
+  with_items:
+    - bdcoe_contact.cfg
+
+- include: register_all_hosts.yml
 
