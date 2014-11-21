@@ -78,7 +78,7 @@ nrpe_group=nrpe
 #
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-allowed_hosts={{ groups['Nagios'] | join (",") }}
+allowed_hosts={{ groups['Shinken'] | join (",") }}
 
 
 

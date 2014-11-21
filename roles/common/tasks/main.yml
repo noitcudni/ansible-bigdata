@@ -30,4 +30,19 @@
   shell: "yum clean all"
 
 #### Create system users ####
+# TODO: take to Zab about what gid and uid have already been taken.
+- name: Ensure that shinken group exists
+  sudo: yes
+  group: name=shinken state=present gid=1000
 
+- name: Ensure that shinken user exists
+  sudo: yes
+  user: group=shinken name=shinken state=present uid=1000
+
+- name: Ensure that nrpe group exists
+  sudo: yes
+  group: name=nrpe state=present gid=1001
+
+- name: Ensure that nrpe user exists
+  sudo: yes
+  user: group=nrpe name=nrpe state=present uid=1001

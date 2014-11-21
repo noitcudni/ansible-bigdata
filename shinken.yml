@@ -3,3 +3,8 @@
   roles:
     - { role: common }
     - { role: shinken }
+
+- hosts: NRPE
+  sudo: True
+  roles:
+    - { role: NRPE }

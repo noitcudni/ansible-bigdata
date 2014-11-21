@@ -1,12 +1,3 @@
-# TODO: take to Zab about what gid and uid have already been taken.
-- name: Ensure that shinken group exists
-  sudo: yes
-  group: name=shinken state=present gid=1000
-
-- name: Ensure that shinken user exists
-  sudo: yes
-  user: group=shinken name=shinken state=present uid=1000
-
 - name: Install necessary yum packages
   yum: name={{item}} state=installed
   sudo: yes
@@ -23,12 +14,34 @@
   sudo_user: shinken
   shell: "shinken --init"
 
-- name: install various shinken modules
+- name: Is shinken's webui module installed
+  stat: path=/var/lib/shinken/modules/webui
+  register: webui_is_installed
+  sudo: yes
+
+- name: Is shinken's auth-cfg-password module installed
+  stat: path=/var/lib/shinken/modules/auth-cfg-password
+  register: auth_cfg_password_is_installed
+  sudo: yes
+
+- debug: var=webui_is_installed
+- debug: var=auth_cfg_password_is_installed
+
+- name: install shinken's webui modules
   sudo_user: shinken
   shell: "shinken install {{item}}"
   with_items:
     - webui
+  when:
+    webui_is_installed.stat.exists == False
+
+- name: install shinken's auth-cfg-password modules
+  sudo_user: shinken
+  shell: "shinken install {{item}}"
+  with_items:
     - auth-cfg-password
+  when:
+    auth_cfg_password_is_installed.stat.exists == False
 
 - template: src={{item}}.j2 dest=/etc/shinken/modules/{{item}}
   sudo: yes

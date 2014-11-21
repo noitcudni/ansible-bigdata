@@ -14,7 +14,7 @@
 #===============================================================================
 define broker {
     broker_name     broker-master
-    address         localhost
+    address         {{ansible_all_ipv4_addresses[0]}}
     port            7772
     spare           0
 
