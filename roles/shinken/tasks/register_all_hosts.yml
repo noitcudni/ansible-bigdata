@@ -1,5 +1,5 @@
 - { include: register_host.yml,
     host_name: localhost,
     ip: 127.0.0.1,
-    contacts: [ bdcoe_contact ]
+    contacts: [ bdcoe ]
   }

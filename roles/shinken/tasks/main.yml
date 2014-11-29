@@ -76,7 +76,8 @@
   sudo_user: shinken
   template: src={{item}}.j2 dest=/etc/shinken/contacts/{{item}}
   with_items:
-    - bdcoe_contact.cfg
+    - bdcoe.cfg
 
 - include: register_all_hosts.yml
 
+- include: register_all_services.yml

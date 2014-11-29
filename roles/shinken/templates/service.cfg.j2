@@ -1,15 +1,43 @@
 define service{
-    host_name               {{host_name}}
+    host_name               {{host_name|join(",")}}
     service_description     {{service_description}}
     check_command           {{check_command}}
 
+    {% if max_check_attempts is defined %}
     max_check_attempts      {{max_check_attempts}}
-    check_interval          {{check_interval}}
-    retry_interval          {{retry_interval}}
+    {% else %}
+    max_check_attempts      5
+    {% endif %}
 
-    check_period            {{check_period}} #example: 24x7
-    notification_interval   {{notication_interval}}
-    notification_period     {{notification_period}} #example: 24x7
+    {% if check_interval is defined %}
+    check_interval          {{check_interval}}
+    {% else %}
+    check_interval          5
+    {% endif %}
+
+    {% if retry_interval is defined %}
+    retry_interval          {{retry_interval}}
+    {% else %}
+    retry_interval          3
+    {% endif %}
+
+    {% if check_period is defined %}
+    check_period            {{check_period}}
+    {% else %}
+    check_period            24x7
+    {% endif %}
+
+    {% if notification_interval is defined %}
+    notification_interval   {{notification_interval}}
+    {% else %}
+    notification_interval   30
+    {% endif %}
+
+    {% if notification_period is defined %}
+    notification_period     {{notification_period}}
+    {% else %}
+    notification_period     24x7
+    {% endif %}
 
     {% if notification_options is defined %}
     notification_options    {{notification_options}}
@@ -18,6 +46,6 @@ define service{
     {% endif %}
 
     # must supply either contacts or a contact_groups
-    contacts               {{contacts}}
+    contacts               {{contacts|join(",")}}
 }
 

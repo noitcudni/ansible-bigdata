@@ -1,7 +1,7 @@
 define host{
     host_name                      {{ host_name }}
     address                        {{ ip }}
-    check_interval                 5 #minutes
+    check_interval                 5 ;minutes
     retry_interval                 1
     max_check_attempts             5
     check_period                   24x7

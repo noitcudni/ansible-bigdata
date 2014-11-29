@@ -1,0 +1,15 @@
+- { include: register_service.yml,
+    contacts: [ bdcoe ],
+    host_name: [ localhost ],
+    service_name: load,
+    service_description: "check_load",
+    check_command: "check_load_nrpe"
+
+    #max_check_attemtps: 5, #default
+    #check_interval: 3, #default
+    #retry_interval: 3, #default
+    #check_period: 24x7, #default
+    #notification_interval: 30 #default
+    #notification_period: 24x7 #default
+  }
+
