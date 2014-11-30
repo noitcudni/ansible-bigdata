@@ -1,0 +1,5 @@
+- hosts: Azkaban
+  sudo: True
+  roles:
+    #- { role: common }
+    - { role: azkaban }

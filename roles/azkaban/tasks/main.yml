@@ -1,0 +1,48 @@
+- name: Make sure that mysql is installed
+  yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - mysql-server
+    - MySQL-python
+
+- name: run mysql
+  sudo: yes
+  service: name=mysqld state=started
+
+# Purposedly not using the mysql_db module due to its dependency on python mysqldb
+- name: CREATE DATABASE azkaban
+  mysql_db: name={{item}} state=present
+  with_items: az_db_name
+
+- name: Creates database user 'azkaban' and password 'azkaban' with all database privileges and 'WITH GRANT OPTION'
+  mysql_user: name={{az_db_user}} password={{az_db_psswd}} priv={{az_db_name}}.*:ALL,GRANT state=present
+
+- name: test to see if max_allowed_packet is set
+  shell: grep "max_allowed_packet" /etc/my.cnf
+  register: max_allowed_packet_stat
+  ignore_errors: true
+
+- name: What's max_allowed_packet in /etc/my.cnf
+  shell: python -c "print '{{max_allowed_packet_stat.stdout}}'.split('=')[-1][:-1]"
+  register: max_allowed_packet_val
+  when: max_allowed_packet_stat.rc == 0
+
+- debug: var=max_allowed_packet_val
+
+- ini_file: dest=/etc/my.cnf section=mysqld option=max_allowed_packet value=1024M backup=yes
+  when: max_allowed_packet_stat.rc == 1 or max_allowed_packet_val < 1024
+
+- name: run mysql
+  sudo: yes
+  service: name=mysqld state=restarted
+  when: max_allowed_packet_stat.rc == 1 or max_allowed_packet_val < 1024
+
+- name: Copy all the sql script to tmp
+  copy: src=azkaban-sql-script-2.5.0/{{item}} dest=/tmp/{{item}}
+  sudo: yes
+  with_items:
+    - create-all-sql-2.5.0.sql
+
+- name: execute create-all-sql-2.5.0.sql
+  shell: mysql -u{{az_db_user}} -p{{az_db_psswd}} --database {{az_db_name}} < /tmp/create-all-sql-2.5.0.sql
+  ignore_errors: true
