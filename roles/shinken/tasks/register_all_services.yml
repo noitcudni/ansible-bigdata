@@ -1,4 +1,5 @@
-- { include: register_service.yml,
+- {
+    include: register_service.yml,
     contacts: [ bdcoe ],
     host_name: [ localhost ],
     service_name: load,
@@ -13,3 +14,11 @@
     #notification_period: 24x7 #default
   }
 
+- {
+    include: register_service.yml,
+    contacts: [ bdcoe ],
+    host_name: [ localhost ],
+    service_name: memory,
+    service_description: "check_memory",
+    check_command: "check_memory_nrpe"
+  }
