@@ -1,10 +1,15 @@
-- hosts: Shinken
+- hosts: all
   sudo: True
   roles:
     - { role: common }
-    - { role: shinken }
 
 - hosts: NRPE
   sudo: True
   roles:
     - { role: NRPE }
+
+- hosts: Shinken
+  sudo: True
+  roles:
+    - { role: shinken }
+

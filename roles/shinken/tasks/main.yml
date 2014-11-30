@@ -57,10 +57,6 @@
   sudo: yes
   shell: /sbin/chkconfig shinken on
 
-- name: run shinken
-  sudo: yes
-  service: name=shinken state=started
-
 - name: Install shinken's command config files
   sudo_user: shinken
   copy: src={{item}} dest=/etc/shinken/commands/{{item}} mode=0644 owner=shinken group=shinken
@@ -81,3 +77,7 @@
 - include: register_all_hosts.yml
 
 - include: register_all_services.yml
+
+- name: run shinken
+  sudo: yes
+  service: name=shinken state=started
