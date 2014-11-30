@@ -29,6 +29,14 @@
   sudo: yes
   shell: "yum clean all"
 
+- name: yum install some useful stuff
+  sudo: yes
+  yum: name={{item}} state=installed
+  with_items:
+    - vim
+    - tmux
+    - lsof
+
 #### Create system users ####
 # TODO: take to Zab about what gid and uid have already been taken.
 - name: Ensure that shinken group exists

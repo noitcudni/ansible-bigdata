@@ -2,8 +2,13 @@
   yum: name={{ item }}
   sudo: yes
   with_items:
-    - nagios-plugins-all
     - nrpe
+    - nagios-plugins-all
+    - nagios-plugins-nrpe
+
+- name: symlink /usr/lib64/nagios/ to /usr/lib/nagios
+  file: src="/usr/lib64/nagios" dest="/usr/lib/nagios" state=link
+  sudo: yes
 
 # The disk_info will be used in nrpe.cfg
 - name: get disk info
@@ -22,6 +27,14 @@
   sudo: yes
   with_items:
     - nrpe.cfg
+
+- name: chown root:shinken /usr/lib64/nagios/plugins
+  shell: chown -R root:shinken /usr/lib64/nagios/plugins
+  sudo: yes
+
+- name: chmod u+s /usr/lib64/nagios/plugins/*
+  shell: chmod u+s /usr/lib64/nagios/plugins/*
+  sudo: yes
 
 - name: run nrpe automatically at boot time
   command: /sbin/chkconfig nrpe on

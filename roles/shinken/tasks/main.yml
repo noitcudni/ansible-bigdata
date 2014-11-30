@@ -65,12 +65,12 @@
   sudo_user: shinken
   copy: src={{item}} dest=/etc/shinken/commands/{{item}} mode=0644 owner=shinken group=shinken
   with_items:
-    - check_disk_nrpe
-    - check_memory_nrpe
-    - check_total_procs_nrpe
-    - check_zombie_procs_nrpe
-    - check_users_nrpe
-    - check_load_nrpe
+    - check_disk_nrpe.cfg
+    - check_memory_nrpe.cfg
+    - check_total_procs_nrpe.cfg
+    - check_zombie_procs_nrpe.cfg
+    - check_users_nrpe.cfg
+    - check_load_nrpe.cfg
 
 - name: Install Shinken's contact config file
   sudo_user: shinken
