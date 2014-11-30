@@ -1,4 +1,4 @@
-{% for item in host_services -%}
+{% for item in shinken_services -%}
     {% for s in item.services -%}
 define service{
     host_name               {{item.host_names|join(",")}}

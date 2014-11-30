@@ -1,6 +1,4 @@
 - name: Install Shinken's services
   sudo_user: shinken
   template: src=service.cfg.j2 dest=/etc/shinken/services/bdcoe.cfg
-  with_items:
-    - host_services
-
+  with_items: shinken_services

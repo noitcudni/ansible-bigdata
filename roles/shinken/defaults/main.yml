@@ -7,7 +7,13 @@ broker_master_modules:
 generic_shinken_contact_email: dummy@placeholder.com
 
 
-host_services:
+shinken_hosts:
+  - host_name: localhost
+    ip: 127.0.0.1
+    contacts:
+      - bdcoe
+
+shinken_services:
   - host_names:
       - localhost
     contacts:
@@ -19,6 +25,7 @@ host_services:
         #max_check_attemtps: 5, #default
         #check_interval: 3, #default
         #retry_interval: 3, #default
+        #
         #check_period: 24x7, #default
         #notification_interval: 30 #default
         #notification_period: 24x7 #default

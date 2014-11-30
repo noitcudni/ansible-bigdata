@@ -1,5 +1,4 @@
-- { include: register_host.yml,
-    host_name: localhost,
-    ip: 127.0.0.1,
-    contacts: [ bdcoe ]
-  }
+- name: Install Shinken's host config file
+  sudo_user: shinken
+  template: src=host.cfg.j2 dest=/etc/shinken/hosts/{{item.host_name}}.cfg
+  with_items: shinken_hosts

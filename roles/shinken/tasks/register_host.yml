@@ -1,3 +1,0 @@
-- name: Install Shinken's host config file
-  sudo_user: shinken
-  template: src=host.cfg.j2 dest=/etc/shinken/hosts/{{host_name}}.cfg
