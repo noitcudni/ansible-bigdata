@@ -1,3 +1,4 @@
+# Set up database
 - name: Make sure that mysql is installed
   yum: name={{item}} state=installed
   sudo: yes
@@ -46,3 +47,7 @@
 - name: execute create-all-sql-2.5.0.sql
   shell: mysql -u{{az_db_user}} -p{{az_db_psswd}} --database {{az_db_name}} < /tmp/create-all-sql-2.5.0.sql
   ignore_errors: true
+
+# Setup WebServer
+- name: download Azkaban's webserver
+  get_url: url={{azkaban_webserver_download_url}} dest=/tmp/{{azkabak_webserver_tar}}

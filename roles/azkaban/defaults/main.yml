@@ -1,3 +1,7 @@
 az_db_name: azkaban
 az_db_user: azkaban
 az_db_psswd: azkaban
+
+azkaban_webserver_version: 2.5.0
+azkaban_webserver_tar: azkaban-web-server-{{azkaban_webserver_version}}.tar.gz
+azkaban_webserver_download_url: https://s3.amazonaws.com/azkaban2/azkaban2/{{azkaban_webserver_version}}/{{azkaban_webserver_tar}}
