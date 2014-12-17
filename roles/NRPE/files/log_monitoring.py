@@ -17,9 +17,10 @@ class LogMonitor(object):
     Checkum : md5 hash of the file content from [index 0, offset)
     """
 
-    CACHED_FILE_TMP = "%(root_path)s/%(log_filename)s_logmonitor_cached.dat"
+    CACHED_FILE_TMP = "%(root_path)s/logmonitor_%(log_filename)s_cached.dat"
 
-    def __init__(self, log_filename, cached_path, warning_pattern=None, critical_pattern=None, ok_pattern=None):
+    def __init__(self, log_filename, cached_path,
+            warning_pattern=None, critical_pattern=None, ok_pattern=None, rotation_pattern=None):
         self.log_filename = log_filename
         self.cached_filename = self.CACHED_FILE_TMP % {
             'root_path' : cached_path,
@@ -35,9 +36,11 @@ class LogMonitor(object):
             self.critical_pattern_regex = re.compile(critical_pattern)
 
         self.ok_pattern_regex = re.compile(ok_pattern)
+        self.rotation_pattern = rotation_pattern
 
         self.warning_lst = []
         self.critical_lst = []
+
 
 
     def _store_state(self, new_offset):
@@ -72,7 +75,9 @@ class LogMonitor(object):
         """
         Basically, it checks to see if the checksum is correct.
         If not, reset the offset from zero.
+        Returns : log_rotated (Boolean), offset (int)
         """
+        log_rotated = False
         offset = 0
         try:
             with open(self.cached_filename, "r") as f:
@@ -81,8 +86,9 @@ class LogMonitor(object):
                 checksum = cached_dict['checksum']
 
                 if checksum != self._gen_checksum(offset):
+                    # Got log rotated
                     offset = 0
-
+                    log_rotated = True
                 if 'critical_lst' in cached_dict:
                     self.critical_lst = cached_dict['critical_lst']
                 if 'warning_lst' in cached_dict:
@@ -90,7 +96,7 @@ class LogMonitor(object):
 
         except IOError:
             offset = 0
-        return offset
+        return log_rotated, offset
 
 
     def _monitor(self, offset):
@@ -143,7 +149,7 @@ class LogMonitor(object):
 
 
     def run(self):
-        offset = self._restore_state()
+        logrotated, offset = self._restore_state()
         self._monitor(offset)
         self._tally_results()
 
@@ -155,6 +161,7 @@ if __name__ == "__main__":
     parser.add_option('--warning_pattern', dest='warning_pattern', type=str, help="A regular expression that will trigger a critical error. To filter more than one expression use or")
     parser.add_option('--critical_pattern', dest='critical_pattern', type=str, help="A regular expression that will trigger a warning. To filter more than one expression use or")
     parser.add_option('--ok_pattern', dest='ok_pattern', type=str, help="A regular expression that resets all the warnings and errors.")
+    parser.add_option('--rotation_pattern', dest='rotation_pattern', type=str, help="A regular expression that describes the commonality among the current log file and the rotated log files.")
 
     options, args = parser.parse_args()
 
@@ -171,8 +178,10 @@ if __name__ == "__main__":
         sys.exit(3)
 
     try:
-        lm = LogMonitor(options.log_file, options.cached_path, options.warning_pattern, options.critical_pattern, options.ok_pattern)
+        lm = LogMonitor(
+            options.log_file, options.cached_path, options.warning_pattern,
+            options.critical_pattern, options.ok_pattern, options.rotation_pattern )
         lm.run()
     except Exception, e:
-        print "CRITICAL - %s" % e
+        print "FAILURE - %s" % e
         sys.exit(3)
