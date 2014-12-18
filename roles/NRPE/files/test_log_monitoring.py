@@ -21,9 +21,6 @@ class TestLogMonitoring(object):
     OK_PATTERN = "^SUCCESS.*$"
     ROTATION_PATTERN = ""
 
-    def _setup_empty_log(self):
-        pass
-
 
     def _setup_log(self):
         fh = open("test_monitor.log", "w")
@@ -35,15 +32,15 @@ class TestLogMonitoring(object):
 
 
     def _inject_error(self, fh):
-        fh.write("FATAL - %s" % "this is a fatal error message.")
+        fh.write("FATAL - %s" % "this is a fatal error message.\n")
 
 
     def _inject_warn(self, fh):
-        fh.write("WARN - %s" % "this is a warning message.")
+        fh.write("WARN - %s" % "this is a warning message.\n")
 
 
     def _inject_ok(self, fh):
-        fh.write("SUCCESS - %s" % "yay")
+        fh.write("SUCCESS - %s" % "yay\n")
 
 
     def setup(self):
@@ -67,7 +64,6 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
 
         # no cached file should be created
-        import pdb; pdb.set_trace() #xxx
         assert os.path.isfile(self.lm.cached_filename) == False, "cached file shouldn't have been created."
         assert status_code == 0, "Encountered an empty log file. Status code should be 0."
 
@@ -79,7 +75,51 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
 
         # a cached file should be created
-
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
 
+
+    def test_log__error_with_cached(self):
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        log_fh.close()
+
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+
+        # run monitoring again.
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 3, "Status code should remain as 3."
+
+
+    def test_log__error_with_cached_with_ok(self):
+        # intermitten checks
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        log_fh.close()
+
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+
+        log_fh = self._setup_log()
+        self._inject_ok(log_fh)
+        log_fh.close()
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
+    def test_log__error_with_cached_with_ok2(self):
+        # check all in one go.
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        self._inject_error(log_fh)
+        self._inject_ok(log_fh)
+        log_fh.close()
+
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 0, "The OK statement should've cleared the error status code."

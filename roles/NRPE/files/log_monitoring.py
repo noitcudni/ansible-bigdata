@@ -136,6 +136,7 @@ class LogMonitor(object):
             status_code = 2
 
 
+        # TODO: The following if else block needs to be removed
         if status_code == 0:
             print "OK"
         else:
