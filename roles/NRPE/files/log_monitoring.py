@@ -59,7 +59,7 @@ class LogMonitor(object):
             cached_dict['warning_lst'] = self.warning_lst
 
         json_str = json.dumps(cached_dict)
-        with open(self.cached_filename, "w") as f:
+        with open(self.cached_filename, "w+") as f:
             f.write(json_str)
 
 
@@ -144,14 +144,19 @@ class LogMonitor(object):
             for x in self.warning_lst:
                print "WARNING - %s" %  x['content']
 
-        sys.exit(status_code)
+        return status_code
 
+
+    def _run_impl(self):
+        logrotated, offset = self._restore_state()
+        self._monitor(offset)
+        status_code = self._tally_results()
+        return status_code
 
 
     def run(self):
-        logrotated, offset = self._restore_state()
-        self._monitor(offset)
-        self._tally_results()
+        status_code = self._run_impl()
+        sys.exit(status_code)
 
 
 if __name__ == "__main__":
