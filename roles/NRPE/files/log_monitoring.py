@@ -11,6 +11,9 @@ import re
 import time
 import glob
 import os
+import gzip
+import bz2
+import zipfile
 
 class LogMissingException(Exception):
     def __init__(self, message):
@@ -143,29 +146,48 @@ class LogMonitor(object):
         return log_rotated, offset
 
 
-    def _monitor(self, offset, log_filename):
-        byte_cnt = 0
+    def _monitor_impl(self, offset, fh):
+        fh.seek(offset)
         curr_t = int(time.time())
-        with open(self.log_filename, "r") as f:
-            f.seek(offset)
-            for line in f:
-                byte_cnt += len(line)
+        byte_cnt = 0
 
-                if self.ok_pattern_regex.match(line):
-                    # clear previous warnings and errors
-                    self.warning_lst = []
-                    self.critical_lst = []
+        for line in fh:
+            byte_cnt += len(line)
 
-                if self.warning_pattern_regex.match(line):
-                    self.warning_lst.append({
-                        'time': curr_t,
-                        'content' : line,
-                    })
-                if self.critical_pattern_regex.match(line):
-                    self.critical_lst.append({
-                        'time': curr_t,
-                        'content' : line,
-                    })
+            if self.ok_pattern_regex.match(line):
+                # clear previous warnings and errors
+                self.warning_lst = []
+                self.critical_lst = []
+
+            if self.warning_pattern_regex.match(line):
+                self.warning_lst.append({
+                    'time': curr_t,
+                    'content' : line,
+                })
+
+            if self.critical_pattern_regex.match(line):
+                self.critical_lst.append({
+                    'time': curr_t,
+                    'content' : line,
+                })
+        return byte_cnt
+
+
+    def _monitor(self, offset, log_filename):
+        ext_type = LogMonitor.get_file_type(log_filename)
+
+        if ext_type == 'uncompressed':
+            with open(self.log_filename, "r") as f:
+                byte_cnt = self._monitor_impl(offset, f)
+        elif ext_type == 'gz':
+            with gzip.open(self.log_filename, "r") as f:
+                byte_cnt = self._monitor_impl(offset, f)
+        elif ext_type == 'bz2':
+            with bz2.BZ2File(self.log_filename, 'r') as f:
+                byte_cnt = self._monitor_impl(offset, f)
+        elif ext_type == 'zip':
+            with zipfile.ZipFile(self.log_filename, 'r') as f:
+                byte_cnt = self._monitor_impl(offset, f)
 
         self._store_state(offset + byte_cnt)
 
