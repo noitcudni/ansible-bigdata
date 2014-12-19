@@ -26,6 +26,27 @@ class LogMonitor(object):
 
     CACHED_FILE_TMP = "%(root_path)s/logmonitor_%(log_filename)s_cached.dat"
 
+    MAGIC_DICT = {
+        "\x1f\x8b\x08": "gz",
+        "\x42\x5a\x68": "bz2",
+        "\x50\x4b\x03\x04": "zip"
+    }
+    MAX_FILE_HEADER_LEN = max(len(x) for x in MAGIC_DICT.keys())
+
+    @classmethod
+    def get_file_type(cls, filename):
+        """
+        Assume that if the log file isn't in gz, bz2 nor zip format,
+        it has to be uncompressed.
+        """
+        with open(filename) as f:
+            file_header = f.read(cls.MAX_FILE_HEADER_LEN)
+        for magic, filetype in cls.MAGIC_DICT.items():
+            if file_header.startswith(magic):
+                return filetype
+        return "uncompressed"
+
+
     def __init__(self, log_filename, cached_path,
             warning_pattern=None, critical_pattern=None, ok_pattern=None, rotation_pattern=None):
         self.log_filename = log_filename

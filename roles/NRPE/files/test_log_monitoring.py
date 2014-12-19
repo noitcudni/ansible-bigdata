@@ -9,6 +9,9 @@ from log_monitoring import (
 )
 import os
 import time
+import gzip
+import bz2
+import zipfile
 
 class TestLogMonitoring(object):
     """
@@ -60,7 +63,7 @@ class TestLogMonitoring(object):
 
 
     def teardown(self):
-        log_file_lst = self._gen_log_file_lst()
+        log_file_lst = self._gen_log_file_lst('all')
         for f in log_file_lst:
             if os.path.isfile(f):
                 os.remove(f)
@@ -153,19 +156,51 @@ class TestLogMonitoring(object):
             assert False, "should be throw a LogMissingException, but got: %s" % e
 
 
-    def _rotate_log(self):
+    def _rotate_log(self, compress_type=None):
         """
         mv test.log to test.log.0
         recreate test.log
         """
-        os.rename(self.lm.log_filename, "%s.0"%self.lm.log_filename)
-        new_log_fh = open(self.lm.log_filename, "w+")
-        new_log_fh.close()
+        r = None
+        if compress_type == None:
+            r = "%s.0"%self.lm.log_filename
+            os.rename(self.lm.log_filename, r)
+            new_log_fh = open(self.lm.log_filename, "w+")
+            new_log_fh.close()
+
+        elif compress_type in set(['gz', 'bz2', 'zip']):
+            with open(self.lm.log_filename, "r") as orig_f:
+                content = orig_f.read()
+
+            if compress_type == 'gz':
+                r = '%s.0.gz'%self.lm.log_filename
+                with gzip.open(r, 'wb') as gf:
+                    gf.write(content)
+
+            elif compress_type == 'bz2':
+                r = '%s.0.bz2'%self.lm.log_filename
+                with bz2.BZ2File(r, 'wb') as bz2f:
+                    bz2f.write(content)
+
+            elif compress_type == 'zip':
+                r = '%s.0.zip'%self.lm.log_filename
+                with zipfile.ZipFile(r, 'w') as zipf:
+                    zipf.write(self.lm.log_filename)
+
+        return r
 
 
-    def _gen_log_file_lst(self):
+    def _gen_log_file_lst(self, ext=None):
         file_lst_tmpl = ["%s.1", "%s.0", "%s"]
+
         file_lst = [x % self.lm.log_filename for x in file_lst_tmpl]
+
+        ext_lst = ["gz", "bz2", "zip"]
+        if ext == 'all':
+            file_lst += [x % self.lm.log_filename + ".%s" % y for x in file_lst_tmpl for y in ext_lst]
+        elif ext in set(ext_lst):
+            file_lst += [x % self.lm.log_filename + ".%s" % ext for x in file_lst_tmpl]
+
         return file_lst
 
 
@@ -178,6 +213,7 @@ class TestLogMonitoring(object):
 
         log_filename = self.lm._get_logrotated_log()
         assert log_filename == "%s.0" % self.lm.log_filename, "Should be returning [log_filename].0"
+
 
 
     def test_detect_log_rotate(self):
@@ -255,6 +291,23 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
+    def _test_get_file_type(self, compression_type):
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        self._inject_ok(log_fh)
+        log_fh.close()
+
+        rotated_log_filename = self._rotate_log(compress_type=compression_type)
+        assert LogMonitor.get_file_type(rotated_log_filename) == compression_type
+
+    def test_get_file_type_gz(self):
+        self._test_get_file_type('gz')
+    def test_get_file_type_bz2(self):
+        self._test_get_file_type('bz2')
+    def test_get_file_type_zip(self):
+        self._test_get_file_type('zip')
 
 
     def test_handle_log_rotate_with_gz(self):
