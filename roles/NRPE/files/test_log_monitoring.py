@@ -41,6 +41,9 @@ class TestLogMonitoring(object):
         return fh
 
 
+    def _inject_innocuous_line(self, fh):
+        fh.write("foo bar baz..\n")
+
     def _inject_error(self, fh):
         fh.write("FATAL - %s" % "this is a fatal error message.\n")
 
@@ -297,7 +300,7 @@ class TestLogMonitoring(object):
         log_fh.close()
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "The OK statement should've cleared the error status code."
+        assert status_code == 3, "Should've encountered an error."
 
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
@@ -316,14 +319,36 @@ class TestLogMonitoring(object):
         rotated_log_filename = self._rotate_log(compress_type=compression_type)
         assert LogMonitor.get_file_type(rotated_log_filename) == compression_type
 
+
     def test_get_file_type_gz(self):
         self._test_get_file_type('gz')
     def test_get_file_type_bz2(self):
         self._test_get_file_type('bz2')
 
+
     def test_handle_no_log_rotate(self):
-        # TODO
-        pass
+        log_fh = self._setup_log()
+        self._inject_ok(log_fh)
+        self._inject_error(log_fh)
+        log_fh.close()
+
+        status_code = self.lm._run_impl()
+        assert status_code == 3, "Should've encountered an error."
+
+        # force overwrite the current log file. No log rotation.
+        log_fh = open(self.lm.log_filename, "w")
+        self._inject_innocuous_line(log_fh)
+        log_fh.close()
+        status_code = self.lm._run_impl()
+        assert status_code == 3, "Should've encountered an error."
+
+        log_fh = self._setup_log()
+        self._inject_ok(log_fh)
+        log_fh.close()
+        status_code = self.lm._run_impl()
+        assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
 
     def test_log__warn(self):
         # TODO check out test_log__error and do the warn version

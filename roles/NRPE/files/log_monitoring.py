@@ -110,9 +110,11 @@ class LogMonitor(object):
         file_lst = glob.glob(self.rotation_pattern)
         file_lst.remove(self.log_filename)
 
+        if len(file_lst) == 0:
+            return None
+
         stat_lst = [(os.stat(x).st_mtime, x) for x in file_lst]
         r_tuple = reduce(lambda a,b: a if (a[0] > b[0]) else b, stat_lst)
-
         return r_tuple[1]
 
 
@@ -194,27 +196,21 @@ class LogMonitor(object):
         elif len(self.warning_lst) > 0:
             status_code = 2
 
-
-        # TODO: The following if else block needs to be removed
-        #if status_code == 0:
-            #print "OK"
-        #else:
-            #for x in self.critical_lst:
-               #print "CRITICAL - %s" %  x['content']
-            #for x in self.warning_lst:
-               #print "WARNING - %s" %  x['content']
-
         return status_code
 
 
     def _run_impl(self):
         logrotated, offset = self._restore_state(self.log_filename)
+        # if logrotated is returned as True, it's very like that a log rotation
+        # has happened.
 
         if self.rotation_pattern is not None:
             if logrotated is True:
                 # read in the previously rotated log first.
                 rotated_log_filename = self._get_logrotated_log()
-                self._monitor(offset, rotated_log_filename)
+                if rotated_log_filename is not None:
+                    self._monitor(offset, rotated_log_filename)
+
                 # reset the offset to zero and read in the current log file.
                 self._monitor(0, self.log_filename)
             else:
