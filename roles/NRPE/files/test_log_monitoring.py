@@ -240,6 +240,7 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
 
+
     def test_handle_log_rotate_error_old_ok_new(self):
         log_fh = self._setup_log()
         self._inject_error(log_fh)
@@ -254,3 +255,16 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
+    def test_handle_log_rotate_with_gz(self):
+        # TODO
+        pass
+
+    def test_handle_no_log_rotate(self):
+        # TODO
+        pass
+
+    def test_log__warn(self):
+        # TODO check out test_log__error and do the warn version
+        pass

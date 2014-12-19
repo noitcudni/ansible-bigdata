@@ -129,7 +129,6 @@ class LogMonitor(object):
             f.seek(offset)
             for line in f:
                 byte_cnt += len(line)
-                print line
 
                 if self.ok_pattern_regex.match(line):
                     # clear previous warnings and errors
@@ -159,13 +158,13 @@ class LogMonitor(object):
 
 
         # TODO: The following if else block needs to be removed
-        if status_code == 0:
-            print "OK"
-        else:
-            for x in self.critical_lst:
-               print "CRITICAL - %s" %  x['content']
-            for x in self.warning_lst:
-               print "WARNING - %s" %  x['content']
+        #if status_code == 0:
+            #print "OK"
+        #else:
+            #for x in self.critical_lst:
+               #print "CRITICAL - %s" %  x['content']
+            #for x in self.warning_lst:
+               #print "WARNING - %s" %  x['content']
 
         return status_code
 
@@ -173,14 +172,19 @@ class LogMonitor(object):
     def _run_impl(self):
         logrotated, offset = self._restore_state(self.log_filename)
 
-        if logrotated is True:
-            # read in the previously rotated log first.
-            rotated_log_filename = self._get_logrotated_log()
-            self._monitor(offset, rotated_log_filename)
-            # reset the offset to zero and read in the current log file.
-            self._monitor(0, self.log_filename)
+        if self.rotation_pattern is not None:
+            if logrotated is True:
+                # read in the previously rotated log first.
+                rotated_log_filename = self._get_logrotated_log()
+                self._monitor(offset, rotated_log_filename)
+                # reset the offset to zero and read in the current log file.
+                self._monitor(0, self.log_filename)
+            else:
+                self._monitor(offset, self.log_filename)
         else:
-            self._monitor(offset, self.log_filename)
+            # assume that no log rotate, but somehow the file has changed.
+            # Read from the beginning.
+            self._monitor(0, self.log_filename)
 
         status_code = self._tally_results()
         return status_code
@@ -192,6 +196,9 @@ class LogMonitor(object):
 
 
 if __name__ == "__main__":
+    """
+    Example: ./log_monitoring.py --log /tmp/test.log --warning_pattern "^WARN*"  --critical_pattern "^FATAL*" --ok_pattern "^SUCCESS*" --rotation_pattern "test.log*"
+    """
     parser = optparse.OptionParser(description='Log monitoring intended to be used by nagios, ie. it does not run as a daemon')
     parser.add_option('--log', dest='log_file', type=str, help="The name of the log file you wish to monitor")
     parser.add_option('--cached_path', dest='cached_path', type=str, default="/tmp", help="The location where the log monitor stores its states.")
