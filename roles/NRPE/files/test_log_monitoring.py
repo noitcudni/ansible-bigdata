@@ -94,6 +94,17 @@ class TestLogMonitoring(object):
         assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
 
 
+    def test_log__warn_no_cached(self):
+        log_fh = self._setup_log()
+        self._inject_warn(log_fh)
+        log_fh.close()
+        status_code = self.lm._run_impl()
+
+        # a cached file should be created
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 2, "Encountered a warning in the log file. Status code should be 2."
+
+
     def test_log__error_with_cached(self):
         log_fh = self._setup_log()
         self._inject_error(log_fh)
@@ -107,6 +118,21 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 3, "Status code should remain as 3."
+
+
+    def test_log__warning_with_cached(self):
+        log_fh = self._setup_log()
+        self._inject_warn(log_fh)
+        log_fh.close()
+
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 2, "Encountered a warning in the log file. Status code should be 2."
+
+        # run monitoring again.
+        status_code = self.lm._run_impl()
+        assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
+        assert status_code == 2, "Status code should remain as 2."
 
 
     def test_log__error_with_cached_with_ok(self):
