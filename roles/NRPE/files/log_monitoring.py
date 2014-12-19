@@ -9,6 +9,13 @@ import sys
 import md5
 import re
 import time
+import glob
+import os
+
+class LogMissingException(Exception):
+    def __init__(self, message):
+        super(LogMissingException, self).__init__(message)
+
 
 class LogMonitor(object):
     """
@@ -50,7 +57,7 @@ class LogMonitor(object):
         """
         cached_dict = {
             'offset' : new_offset,
-            'checksum' : self._gen_checksum(new_offset)
+            'checksum' : self._gen_checksum(self.log_filename, new_offset)
         }
 
         if len(self.critical_lst) > 0:
@@ -63,15 +70,31 @@ class LogMonitor(object):
             f.write(json_str)
 
 
-    def _gen_checksum(self, offset):
-        with open(self.log_filename, "r") as f:
-            content = f.read(offset)
-            m = md5.new(content)
-            m.update(content)
-            return m.hexdigest()
+    def _gen_checksum(self, log_filename, offset):
+        try:
+            with open(self.log_filename, "r") as f:
+                content = f.read(offset)
+                m = md5.new(content)
+                m.update(content)
+                return m.hexdigest()
+        except IOError:
+            raise LogMissingException("%s log is missing" % self.log_filename)
 
 
-    def _restore_state(self):
+    def _get_logrotated_log(self):
+        """
+        Get the most recently rotated log
+        """
+        file_lst = glob.glob(self.rotation_pattern)
+        file_lst.remove(self.log_filename)
+
+        stat_lst = [(os.stat(x).st_mtime, x) for x in file_lst]
+        r_tuple = reduce(lambda a,b: a if (a[0] > b[0]) else b, stat_lst)
+
+        return r_tuple[1]
+
+
+    def _restore_state(self, log_filename):
         """
         Basically, it checks to see if the checksum is correct.
         If not, reset the offset from zero.
@@ -85,7 +108,7 @@ class LogMonitor(object):
                 offset = cached_dict['offset']
                 checksum = cached_dict['checksum']
 
-                if checksum != self._gen_checksum(offset):
+                if checksum != self._gen_checksum(log_filename, offset):
                     # Got log rotated
                     offset = 0
                     log_rotated = True
@@ -99,7 +122,7 @@ class LogMonitor(object):
         return log_rotated, offset
 
 
-    def _monitor(self, offset):
+    def _monitor(self, offset, log_filename):
         byte_cnt = 0
         curr_t = int(time.time())
         with open(self.log_filename, "r") as f:
@@ -124,8 +147,7 @@ class LogMonitor(object):
                         'content' : line,
                     })
 
-        if byte_cnt > 0:
-            self._store_state(offset + byte_cnt)
+        self._store_state(offset + byte_cnt)
 
 
     def _tally_results(self):
@@ -149,8 +171,17 @@ class LogMonitor(object):
 
 
     def _run_impl(self):
-        logrotated, offset = self._restore_state()
-        self._monitor(offset)
+        logrotated, offset = self._restore_state(self.log_filename)
+
+        if logrotated is True:
+            # read in the previously rotated log first.
+            rotated_log_filename = self._get_logrotated_log()
+            self._monitor(offset, rotated_log_filename)
+            # reset the offset to zero and read in the current log file.
+            self._monitor(0, self.log_filename)
+        else:
+            self._monitor(offset, self.log_filename)
+
         status_code = self._tally_results()
         return status_code
 
