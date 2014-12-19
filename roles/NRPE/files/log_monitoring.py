@@ -13,7 +13,6 @@ import glob
 import os
 import gzip
 import bz2
-import zipfile
 
 class LogMissingException(Exception):
     def __init__(self, message):
@@ -32,14 +31,13 @@ class LogMonitor(object):
     MAGIC_DICT = {
         "\x1f\x8b\x08": "gz",
         "\x42\x5a\x68": "bz2",
-        "\x50\x4b\x03\x04": "zip"
     }
     MAX_FILE_HEADER_LEN = max(len(x) for x in MAGIC_DICT.keys())
 
     @classmethod
     def get_file_type(cls, filename):
         """
-        Assume that if the log file isn't in gz, bz2 nor zip format,
+        Assume that if the log file isn't in gz nor bz2 format,
         it has to be uncompressed.
         """
         with open(filename) as f:
@@ -177,16 +175,13 @@ class LogMonitor(object):
         ext_type = LogMonitor.get_file_type(log_filename)
 
         if ext_type == 'uncompressed':
-            with open(self.log_filename, "r") as f:
+            with open(log_filename, "r") as f:
                 byte_cnt = self._monitor_impl(offset, f)
         elif ext_type == 'gz':
-            with gzip.open(self.log_filename, "r") as f:
+            with gzip.open(log_filename, "r") as f:
                 byte_cnt = self._monitor_impl(offset, f)
         elif ext_type == 'bz2':
-            with bz2.BZ2File(self.log_filename, 'r') as f:
-                byte_cnt = self._monitor_impl(offset, f)
-        elif ext_type == 'zip':
-            with zipfile.ZipFile(self.log_filename, 'r') as f:
+            with bz2.BZ2File(log_filename, 'r') as f:
                 byte_cnt = self._monitor_impl(offset, f)
 
         self._store_state(offset + byte_cnt)

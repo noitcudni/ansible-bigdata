@@ -11,7 +11,6 @@ import os
 import time
 import gzip
 import bz2
-import zipfile
 
 class TestLogMonitoring(object):
     """
@@ -165,8 +164,6 @@ class TestLogMonitoring(object):
         if compress_type == None:
             r = "%s.0"%self.lm.log_filename
             os.rename(self.lm.log_filename, r)
-            new_log_fh = open(self.lm.log_filename, "w+")
-            new_log_fh.close()
 
         elif compress_type in set(['gz', 'bz2', 'zip']):
             with open(self.lm.log_filename, "r") as orig_f:
@@ -182,11 +179,8 @@ class TestLogMonitoring(object):
                 with bz2.BZ2File(r, 'wb') as bz2f:
                     bz2f.write(content)
 
-            elif compress_type == 'zip':
-                r = '%s.0.zip'%self.lm.log_filename
-                with zipfile.ZipFile(r, 'w') as zipf:
-                    zipf.write(self.lm.log_filename)
-
+        new_log_fh = open(self.lm.log_filename, "w+")
+        new_log_fh.close()
         return r
 
 
@@ -216,7 +210,7 @@ class TestLogMonitoring(object):
 
 
 
-    def test_detect_log_rotate(self):
+    def _detect_log_rotate_helper(self, compression_type):
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
         self._inject_ok(log_fh)
@@ -225,17 +219,23 @@ class TestLogMonitoring(object):
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 0, "The OK statement should've cleared the error status code."
 
-        self._rotate_log()
+        self._rotate_log(compression_type)
         logrotated, offset = self.lm._restore_state(self.lm.log_filename)
         assert logrotated == True, "Should've detected log rotate."
 
+    def test_detect_log_rotate(self):
+        self._detect_log_rotate_helper(None)
+    def test_detect_log_rotate_gz(self):
+        self._detect_log_rotate_helper('gz')
+    def test_detect_log_rotate_bz2(self):
+        self._detect_log_rotate_helper('bz2')
 
     def get_cached_info_helper(self):
         fh = open(self.lm.cached_filename, "r")
         return json.loads(fh.read())
 
 
-    def test_handle_log_rotate_no_error(self):
+    def _handle_log_rotate_no_error_helper(self, compression_type):
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
         log_fh.close()
@@ -249,7 +249,7 @@ class TestLogMonitoring(object):
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
         log_fh.close()
-        self._rotate_log()
+        self._rotate_log(compression_type)
         status_code = self.lm._run_impl()
         curr_cached_info = self.get_cached_info_helper()
 
@@ -257,6 +257,14 @@ class TestLogMonitoring(object):
 
         assert curr_cached_info['checksum'] != old_cached_info['checksum']
         assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
+    def test_log_rotate_no_error_helper(self):
+        self._handle_log_rotate_no_error_helper(None)
+    def test_log_rotate_no_error_helper_gz(self):
+        self._handle_log_rotate_no_error_helper('gz')
+    def test_log_rotate_no_error_helper_bz2(self):
+        self._handle_log_rotate_no_error_helper('bz2')
 
 
     def test_handle_log_rotate_ok_old_error_new(self):
@@ -306,13 +314,7 @@ class TestLogMonitoring(object):
         self._test_get_file_type('gz')
     def test_get_file_type_bz2(self):
         self._test_get_file_type('bz2')
-    def test_get_file_type_zip(self):
-        self._test_get_file_type('zip')
 
-
-    def test_handle_log_rotate_with_gz(self):
-        # TODO
-        pass
 
     def test_handle_no_log_rotate(self):
         # TODO
