@@ -267,7 +267,7 @@ class TestLogMonitoring(object):
         self._handle_log_rotate_no_error_helper('bz2')
 
 
-    def test_handle_log_rotate_ok_old_error_new(self):
+    def _handle_log_rotate_ok_old_error_new_helper(self, compression_type):
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
         log_fh.close()
@@ -277,13 +277,19 @@ class TestLogMonitoring(object):
         old_cached_info = self.get_cached_info_helper()
         assert old_cached_info['offset'] > 0, "The old offset should be > 0."
 
-        self._rotate_log()
+        self._rotate_log(compression_type)
         log_fh = self._setup_log()
         self._inject_error(log_fh)
         log_fh.close()
         status_code = self.lm._run_impl()
         assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
 
+    def test_handle_log_rotate_ok_old_error_new(self):
+        self._handle_log_rotate_ok_old_error_new_helper(None)
+    def test_handle_log_rotate_ok_old_error_new_gz(self):
+        self._handle_log_rotate_ok_old_error_new_helper('gz')
+    def test_handle_log_rotate_ok_old_error_new_bz2(self):
+        self._handle_log_rotate_ok_old_error_new_helper('bz2')
 
     def test_handle_log_rotate_error_old_ok_new(self):
         log_fh = self._setup_log()
@@ -314,7 +320,6 @@ class TestLogMonitoring(object):
         self._test_get_file_type('gz')
     def test_get_file_type_bz2(self):
         self._test_get_file_type('bz2')
-
 
     def test_handle_no_log_rotate(self):
         # TODO
