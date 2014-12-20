@@ -114,7 +114,10 @@ class LogMonitor(object):
             return None
 
         stat_lst = [(os.stat(x).st_mtime, x) for x in file_lst]
-        r_tuple = reduce(lambda a,b: a if (a[0] > b[0]) else b, stat_lst)
+        sorted_stat_lst = sorted(stat_lst, key=lambda x: x[1])
+        sorted_stat_lst.reverse()
+
+        r_tuple = reduce(lambda a,b: a if (a[0] > b[0]) else b, sorted_stat_lst)
         return r_tuple[1]
 
 
