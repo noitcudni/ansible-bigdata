@@ -234,6 +234,10 @@ class LogMonitor(object):
 
 if __name__ == "__main__":
     """
+    Description:
+    This module stores previous error and warning conditions on disk in between runs. The first thing it does upon invocation is to restore those saved states.
+    If no new log entires match the --ok_pattern, The previous error and warning conditions will get alerted again.
+
     Example: ./log_monitoring.py --log /tmp/test.log --warning_pattern "^WARN*"  --critical_pattern "^FATAL*" --ok_pattern "^SUCCESS*" --rotation_pattern "test.log*"
     """
     parser = optparse.OptionParser(description='Log monitoring intended to be used by nagios, ie. it does not run as a daemon')
