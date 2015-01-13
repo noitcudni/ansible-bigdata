@@ -64,7 +64,11 @@ class LogMonitor(object):
         if critical_pattern is not None:
             self.critical_pattern_regex = re.compile(critical_pattern)
 
-        self.ok_pattern_regex = re.compile(ok_pattern)
+        if ok_pattern is not None:
+            self.ok_pattern_regex = re.compile(ok_pattern)
+        else:
+            self.ok_pattern_regex = None
+
         self.rotation_pattern = rotation_pattern
 
         self.warning_lst = []
@@ -154,10 +158,16 @@ class LogMonitor(object):
         curr_t = int(time.time())
         byte_cnt = 0
 
+        # if ok_pattern is ommitted, don't keep old errors and warnings around.
+        # start anew.
+        if self.ok_pattern_regex is None:
+            self.warning_lst = []
+            self.critical_lst = []
+
         for line in fh:
             byte_cnt += len(line)
 
-            if self.ok_pattern_regex.match(line):
+            if self.ok_pattern_regex is not None and self.ok_pattern_regex.match(line):
                 # clear previous warnings and errors
                 self.warning_lst = []
                 self.critical_lst = []
@@ -192,13 +202,19 @@ class LogMonitor(object):
         self._store_state(offset + byte_cnt)
 
 
+    def _print_content(self, lst):
+        for x in lst:
+            print x['content']
+
+
     def _tally_results(self):
         status_code = 0 #OK
         if len(self.critical_lst) > 0:
             status_code = 3
+            self._print_content(self.critical_lst)
         elif len(self.warning_lst) > 0:
             status_code = 2
-
+            self._print_content(self.warning_lst)
         return status_code
 
 
@@ -245,7 +261,7 @@ if __name__ == "__main__":
     parser.add_option('--cached_path', dest='cached_path', type=str, default="/tmp", help="The location where the log monitor stores its states.")
     parser.add_option('--warning_pattern', dest='warning_pattern', type=str, help="A regular expression that will trigger a critical error. To filter more than one expression use or")
     parser.add_option('--critical_pattern', dest='critical_pattern', type=str, help="A regular expression that will trigger a warning. To filter more than one expression use or")
-    parser.add_option('--ok_pattern', dest='ok_pattern', type=str, help="A regular expression that resets all the warnings and errors.")
+    parser.add_option('--ok_pattern', dest='ok_pattern', type=str, help="A regular expression that resets all the warnings and errors. If ok_pattern is ommitted, it will not fire off old errors.")
     parser.add_option('--rotation_pattern', dest='rotation_pattern', type=str, help="A regular expression that describes the commonality among the current log file and the rotated log files.")
 
     options, args = parser.parse_args()
@@ -256,10 +272,6 @@ if __name__ == "__main__":
 
     if options.warning_pattern is None and options.critical_pattern is None:
         print "must supply ethier the --warning_pattern argument or the critical_pattern argument."
-        sys.exit(3)
-
-    if options.ok_pattern is None:
-        print "must supply the --ok_pattern argument"
         sys.exit(3)
 
     try:

@@ -62,6 +62,11 @@ class TestLogMonitoring(object):
             self.WARNING_PATTERN, self.CRITICAL_PATTERN,
             self.OK_PATTERN, self.ROTATION_PATTERN,
         )
+        self.lm_no_ok_pattern = LogMonitor(
+            self.LOG_FILE, self.CACHED_PATH,
+            self.WARNING_PATTERN, self.CRITICAL_PATTERN,
+            None, self.ROTATION_PATTERN,
+        )
 
 
     def teardown(self):
@@ -165,6 +170,25 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
         assert status_code == 0, "The OK statement should've cleared the error status code."
+
+
+    def test_log_without_ok_pattern(self):
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        log_fh.close()
+        status_code = self.lm_no_ok_pattern._run_impl()
+
+        assert status_code == 3, "Encounterd an error in the log file. Status code should be 3."
+        assert os.path.isfile(self.lm_no_ok_pattern.cached_filename) == True, "cached file should've been created."
+
+        log_fh = self._setup_log()
+        self._inject_innocuous_line(log_fh)
+        self._inject_innocuous_line(log_fh)
+        log_fh.close()
+        status_code = self.lm_no_ok_pattern._run_impl()
+
+        assert status_code == 0, "OK_pattern is omitted. Shouldn't fire off old errors."
+        assert os.path.isfile(self.lm_no_ok_pattern.cached_filename) == True, "cached file should've been created."
 
 
     def test_missing_log_file(self):
