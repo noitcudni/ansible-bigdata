@@ -49,12 +49,24 @@ class LogMonitor(object):
 
 
     def __init__(self, log_filename, cached_path,
-            warning_pattern=None, critical_pattern=None, ok_pattern=None, rotation_pattern=None):
+            warning_pattern=None, critical_pattern=None, ok_pattern=None, rotation_pattern=None, log_prefix=None):
         self.log_filename = log_filename
-        self.cached_filename = self.CACHED_FILE_TMP % {
+
+        cached_filename_args = {
             'root_path' : cached_path,
-            'log_filename' : log_filename.split("/")[-1].split(".")[0],
         }
+        if log_prefix is not None:
+            cached_filename_args['log_filename'] = log_prefix
+        else:
+            cached_filename_args['log_filename'] = log_filename.split("/")[-1].split(".")[0]
+
+        self.cached_filename = self.CACHED_FILE_TMP % cached_filename_args
+
+
+        #self.cached_filename = self.CACHED_FILE_TMP % {
+            #'root_path' : cached_path,
+            #'log_filename' : log_filename.split("/")[-1].split(".")[0],
+        #}
 
         self.warning_pattern_regex = None
         if warning_pattern is not None:
@@ -77,7 +89,7 @@ class LogMonitor(object):
 
     @property
     def curr_log_filename(self):
-        if self.rotation_pattern is not None:
+        if self.rotation_pattern is not None and self.log_filename is None:
             return self._get_current_log()
         else:
             return self.log_filename
@@ -121,7 +133,8 @@ class LogMonitor(object):
         """
         try:
             file_lst = glob.glob(self.rotation_pattern)
-            if self.log_filename not in set(file_lst):
+            if self.log_filename is not None and \
+               self.log_filename not in set(file_lst):
                 file_lst.append(self.log_filename)
 
             if len(file_lst) == 0:
@@ -281,6 +294,10 @@ if __name__ == "__main__":
     If no new log entires match the --ok_pattern, The previous error and warning conditions will get alerted again.
 
     Example: ./log_monitoring.py --log /tmp/test.log --warning_pattern "^WARN*"  --critical_pattern "^FATAL*" --ok_pattern "^SUCCESS*" --rotation_pattern "test.log*"
+
+    If --log is not present but --rotation_pattern is supplied, it assumes that the current log's name doesn't stay constant. For instance, foo-[timestamp].log.
+    If --log is present and --rotation_pattern is supplied, it assumes that the current log is constant, while the log rotated logs are described by --rotation_pattern.
+
     """
     parser = optparse.OptionParser(description='Log monitoring intended to be used by nagios, ie. it does not run as a daemon')
     parser.add_option('--log', dest='log_file', type=str, help="The name of the log file you wish to monitor")
@@ -289,11 +306,16 @@ if __name__ == "__main__":
     parser.add_option('--critical_pattern', dest='critical_pattern', type=str, help="A regular expression that will trigger a warning. To filter more than one expression use or")
     parser.add_option('--ok_pattern', dest='ok_pattern', type=str, help="A regular expression that resets all the warnings and errors. If ok_pattern is ommitted, it will not fire off old errors.")
     parser.add_option('--rotation_pattern', dest='rotation_pattern', type=str, help="A regular expression that describes the commonality among the current log file and the rotated log files.")
+    parser.add_option('--log_prefix', dest='log_prefix', type=str, help="If there isn't a constant current log file, ie. no --log but with --rotation_pattern")
 
     options, args = parser.parse_args()
 
-    if options.log_file is None:
-        print "must supply the --log argument"
+    if options.log_file is None and options.rotation_pattern is None:
+        print "must supply the --log argument or the --rotation_pattern argument"
+        sys.exit(3)
+
+    if options.log_file is None and options.rotation_pattern is not None and options.log_prefix is None:
+        print "with --rotation_pattern and no --log argument, you must also supply --log_prefix"
         sys.exit(3)
 
     if options.warning_pattern is None and options.critical_pattern is None:
@@ -303,7 +325,7 @@ if __name__ == "__main__":
     try:
         lm = LogMonitor(
             options.log_file, options.cached_path, options.warning_pattern,
-            options.critical_pattern, options.ok_pattern, options.rotation_pattern )
+            options.critical_pattern, options.ok_pattern, options.rotation_pattern, options.log_prefix)
         lm.run()
     except Exception, e:
         print "FAILURE - %s" % e

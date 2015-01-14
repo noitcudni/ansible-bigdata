@@ -11,6 +11,8 @@ import os
 import time
 import gzip
 import bz2
+import glob
+from datetime import datetime, timedelta
 
 class TestLogMonitoring(object):
     """
@@ -74,6 +76,10 @@ class TestLogMonitoring(object):
         for f in log_file_lst:
             if os.path.isfile(f):
                 os.remove(f)
+
+        for f in glob.glob("*.log"):
+            os.remove(f)
+
 
         if os.path.isfile(self.lm_no_ok_pattern.cached_filename):
             os.remove(self.lm_no_ok_pattern.cached_filename)
@@ -402,6 +408,27 @@ class TestLogMonitoring(object):
         status_code = self.lm._run_impl()
         assert status_code == 0, "The OK statement should've cleared the error status code."
 
+
+    def test_curr_log_filename(self):
+        # no log_filename, with rotation_pattern
+        file_tmpl = "test_monitor-%s.log"
+        dt = datetime(2014, 12, 1)
+        delta = timedelta(days=1)
+
+        file_lst = [file_tmpl % (dt + (delta * x)).strftime("%Y%m%d") for x in xrange(4)]
+
+        for f in file_lst:
+            fh = open(f, "w+")
+            fh.close()
+            time.sleep(1)
+
+        lm = LogMonitor(
+            None, self.CACHED_PATH,
+            self.WARNING_PATTERN, self.CRITICAL_PATTERN,
+            self.OK_PATTERN, self.ROTATION_PATTERN,
+            "test_monitor"
+        )
+        assert lm.curr_log_filename == file_lst[-1]
 
 
     def test_log__warn(self):
