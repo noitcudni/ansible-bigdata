@@ -55,8 +55,10 @@ class LogMonitor(object):
         cached_filename_args = {
             'root_path' : cached_path,
         }
+        self.log_prefix = log_prefix
+
         if log_prefix is not None:
-            cached_filename_args['log_filename'] = log_prefix
+            cached_filename_args['log_filename'] = "_".join(log_prefix.split("/"))
         else:
             cached_filename_args['log_filename'] = log_filename.split("/")[-1].split(".")[0]
 
@@ -132,7 +134,16 @@ class LogMonitor(object):
         Get the most recently rotated log
         """
         try:
-            file_lst = glob.glob(self.rotation_pattern)
+            if self.log_filename is not None:
+                log_path_prefix = "/".join(self.log_filename.split("/")[:-1])
+                if len(log_path_prefix) > 0:
+                    log_path = "%s/%s" % (log_path_prefix, self.rotation_pattern)
+                else:
+                    log_path = self.rotation_pattern
+            else:
+                log_path = "%s*" % self.log_prefix
+
+            file_lst = glob.glob(log_path)
             if self.log_filename is not None and \
                self.log_filename not in set(file_lst):
                 file_lst.append(self.log_filename)
