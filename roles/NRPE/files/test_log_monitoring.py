@@ -74,7 +74,11 @@ class TestLogMonitoring(object):
         for f in log_file_lst:
             if os.path.isfile(f):
                 os.remove(f)
-        if os.path.isfile(self.lm.cached_filename):
+
+        if os.path.isfile(self.lm_no_ok_pattern.cached_filename):
+            os.remove(self.lm_no_ok_pattern.cached_filename)
+
+        if os.path.isfile(self.lm_no_ok_pattern.cached_filename):
             os.remove(self.lm.cached_filename)
 
 
@@ -205,7 +209,7 @@ class TestLogMonitoring(object):
         except LogMissingException:
             assert True, "should be throw a LogMissingException."
         except Exception, e:
-            assert False, "should be throw a LogMissingException, but got: %s" % e
+            assert False, "should be throw a LogMissingException, but got: %s" % e.__class__
 
 
     def _rotate_log(self, compress_type=None):
@@ -232,6 +236,7 @@ class TestLogMonitoring(object):
                 with bz2.BZ2File(r, 'wb') as bz2f:
                     bz2f.write(content)
 
+        time.sleep(1)
         new_log_fh = open(self.lm.log_filename, "w+")
         new_log_fh.close()
         return r
@@ -259,8 +264,7 @@ class TestLogMonitoring(object):
             time.sleep(1)
 
         log_filename = self.lm._get_logrotated_log()
-        assert log_filename == "%s.0" % self.lm.log_filename, "Should be returning [log_filename].0"
-
+        assert log_filename == "%s.0" % self.lm.curr_log_filename, "Should be returning [log_filename].0"
 
 
     def _detect_log_rotate_helper(self, compression_type):
@@ -273,7 +277,7 @@ class TestLogMonitoring(object):
         assert status_code == 0, "The OK statement should've cleared the error status code."
 
         self._rotate_log(compression_type)
-        logrotated, offset = self.lm._restore_state(self.lm.log_filename)
+        logrotated, offset = self.lm._restore_state(self.lm.curr_log_filename)
         assert logrotated == True, "Should've detected log rotate."
 
     def test_detect_log_rotate(self):
@@ -386,7 +390,7 @@ class TestLogMonitoring(object):
         assert status_code == 3, "Should've encountered an error."
 
         # force overwrite the current log file. No log rotation.
-        log_fh = open(self.lm.log_filename, "w")
+        log_fh = open(self.lm.curr_log_filename, "w")
         self._inject_innocuous_line(log_fh)
         log_fh.close()
         status_code = self.lm._run_impl()

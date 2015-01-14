@@ -75,6 +75,14 @@ class LogMonitor(object):
         self.critical_lst = []
 
 
+    @property
+    def curr_log_filename(self):
+        if self.rotation_pattern is not None:
+            return self._get_current_log()
+        else:
+            return self.log_filename
+
+
 
     def _store_state(self, new_offset):
         """
@@ -83,7 +91,7 @@ class LogMonitor(object):
         """
         cached_dict = {
             'offset' : new_offset,
-            'checksum' : self._gen_checksum(self.log_filename, new_offset)
+            'checksum' : self._gen_checksum(self.curr_log_filename, new_offset)
         }
 
         if len(self.critical_lst) > 0:
@@ -98,31 +106,49 @@ class LogMonitor(object):
 
     def _gen_checksum(self, log_filename, offset):
         try:
-            with open(self.log_filename, "r") as f:
+            with open(log_filename, "r") as f:
                 content = f.read(offset)
                 m = md5.new(content)
                 m.update(content)
                 return m.hexdigest()
         except IOError:
-            raise LogMissingException("%s log is missing" % self.log_filename)
+            raise LogMissingException("%s log is missing" % log_filename)
 
 
-    def _get_logrotated_log(self):
+    def _get_log_from_logrotation(self, current_log):
         """
         Get the most recently rotated log
         """
-        file_lst = glob.glob(self.rotation_pattern)
-        file_lst.remove(self.log_filename)
+        try:
+            file_lst = glob.glob(self.rotation_pattern)
+            if self.log_filename not in set(file_lst):
+                file_lst.append(self.log_filename)
 
-        if len(file_lst) == 0:
-            return None
+            if len(file_lst) == 0:
+                return None
 
-        stat_lst = [(os.stat(x).st_mtime, x) for x in file_lst]
-        sorted_stat_lst = sorted(stat_lst, key=lambda x: x[1])
-        sorted_stat_lst.reverse()
+            stat_lst = [(os.stat(x).st_mtime, x) for x in file_lst]
+            sorted_stat_lst = sorted(stat_lst, key=lambda x: x[0])
+            sorted_stat_lst.reverse()
 
-        r_tuple = reduce(lambda a,b: a if (a[0] > b[0]) else b, sorted_stat_lst)
-        return r_tuple[1]
+            if current_log == True:
+                return sorted_stat_lst[0][1]
+            else:
+                # return just log rotated log
+                if len(sorted_stat_lst) > 1:
+                    return sorted_stat_lst[1][1]
+                else:
+                    return sorted_stat_lst[0][1] #possible that the log file just truncated.
+        except OSError, e :
+            raise LogMissingException("%s log is missing" % e.filename)
+
+
+    def _get_current_log(self):
+        return self._get_log_from_logrotation(current_log=True)
+
+
+    def _get_logrotated_log(self):
+        return self._get_log_from_logrotation(current_log=False)
 
 
     def _restore_state(self, log_filename):
@@ -219,7 +245,7 @@ class LogMonitor(object):
 
 
     def _run_impl(self):
-        logrotated, offset = self._restore_state(self.log_filename)
+        logrotated, offset = self._restore_state(self.curr_log_filename)
         # if logrotated is returned as True, it's very like that a log rotation
         # has happened.
 
@@ -231,13 +257,13 @@ class LogMonitor(object):
                     self._monitor(offset, rotated_log_filename)
 
                 # reset the offset to zero and read in the current log file.
-                self._monitor(0, self.log_filename)
+                self._monitor(0, self.curr_log_filename)
             else:
-                self._monitor(offset, self.log_filename)
+                self._monitor(offset, self.curr_log_filename)
         else:
             # assume that no log rotate, but somehow the file has changed.
             # Read from the beginning.
-            self._monitor(0, self.log_filename)
+            self._monitor(0, self.curr_log_filename)
 
         status_code = self._tally_results()
         return status_code
