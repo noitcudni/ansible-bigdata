@@ -193,18 +193,18 @@ class LogMonitor(object):
         for line in fh:
             byte_cnt += len(line)
 
-            if self.ok_pattern_regex is not None and self.ok_pattern_regex.match(line):
+            if self.ok_pattern_regex is not None and self.ok_pattern_regex.search(line):
                 # clear previous warnings and errors
                 self.warning_lst = []
                 self.critical_lst = []
 
-            if self.warning_pattern_regex.match(line):
+            if self.warning_pattern_regex is not None and self.warning_pattern_regex.search(line):
                 self.warning_lst.append({
                     'time': curr_t,
                     'content' : line,
                 })
 
-            if self.critical_pattern_regex.match(line):
+            if self.critical_pattern_regex is not None and self.critical_pattern_regex.search(line):
                 self.critical_lst.append({
                     'time': curr_t,
                     'content' : line,
