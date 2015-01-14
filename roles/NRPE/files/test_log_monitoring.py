@@ -106,7 +106,7 @@ class TestLogMonitoring(object):
 
         # a cached file should be created
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+        assert status_code == 2, "Encountered an error in the log file. Status code should be 2."
 
 
     def test_log__warn_no_cached(self):
@@ -117,7 +117,7 @@ class TestLogMonitoring(object):
 
         # a cached file should be created
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 2, "Encountered a warning in the log file. Status code should be 2."
+        assert status_code == 1, "Encountered a warning in the log file. Status code should be 1."
 
 
     def test_log__error_with_cached(self):
@@ -127,12 +127,12 @@ class TestLogMonitoring(object):
 
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+        assert status_code == 2, "Encountered an error in the log file. Status code should be 2."
 
         # run monitoring again.
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "Status code should remain as 3."
+        assert status_code == 2, "Status code should remain as 2."
 
 
     def test_log__warning_with_cached(self):
@@ -142,12 +142,12 @@ class TestLogMonitoring(object):
 
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 2, "Encountered a warning in the log file. Status code should be 2."
+        assert status_code == 1, "Encountered a warning in the log file. Status code should be 1."
 
         # run monitoring again.
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 2, "Status code should remain as 2."
+        assert status_code == 1, "Status code should remain as 1."
 
 
     def test_log__error_with_cached_with_ok(self):
@@ -158,7 +158,7 @@ class TestLogMonitoring(object):
 
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+        assert status_code == 2, "Encountered an error in the log file. Status code should be 2."
 
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
@@ -188,7 +188,7 @@ class TestLogMonitoring(object):
         log_fh.close()
         status_code = self.lm_no_ok_pattern._run_impl()
 
-        assert status_code == 3, "Encounterd an error in the log file. Status code should be 3."
+        assert status_code == 2, "Encounterd an error in the log file. Status code should be 2."
         assert os.path.isfile(self.lm_no_ok_pattern.cached_filename) == True, "cached file should've been created."
 
         log_fh = self._setup_log()
@@ -345,7 +345,7 @@ class TestLogMonitoring(object):
         self._inject_error(log_fh)
         log_fh.close()
         status_code = self.lm._run_impl()
-        assert status_code == 3, "Encountered an error in the log file. Status code should be 3."
+        assert status_code == 2, "Encountered an error in the log file. Status code should be 2."
 
     def test_handle_log_rotate_ok_old_error_new(self):
         self._handle_log_rotate_ok_old_error_new_helper(None)
@@ -360,7 +360,7 @@ class TestLogMonitoring(object):
         log_fh.close()
         status_code = self.lm._run_impl()
         assert os.path.isfile(self.lm.cached_filename) == True, "cached file should've been created."
-        assert status_code == 3, "Should've encountered an error."
+        assert status_code == 2, "Should've encountered an error."
 
         log_fh = self._setup_log()
         self._inject_ok(log_fh)
@@ -393,14 +393,14 @@ class TestLogMonitoring(object):
         log_fh.close()
 
         status_code = self.lm._run_impl()
-        assert status_code == 3, "Should've encountered an error."
+        assert status_code == 2, "Should've encountered an error."
 
         # force overwrite the current log file. No log rotation.
         log_fh = open(self.lm.curr_log_filename, "w")
         self._inject_innocuous_line(log_fh)
         log_fh.close()
         status_code = self.lm._run_impl()
-        assert status_code == 3, "Should've encountered an error."
+        assert status_code == 2, "Should've encountered an error."
 
         log_fh = self._setup_log()
         self._inject_ok(log_fh)

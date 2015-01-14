@@ -258,12 +258,13 @@ class LogMonitor(object):
 
 
     def _tally_results(self):
+        print "OK"
         status_code = 0 #OK
         if len(self.critical_lst) > 0:
-            status_code = 3
+            status_code = 2
             self._print_content(self.critical_lst)
         elif len(self.warning_lst) > 0:
-            status_code = 2
+            status_code = 1
             self._print_content(self.warning_lst)
         return status_code
 
@@ -323,15 +324,15 @@ if __name__ == "__main__":
 
     if options.log_file is None and options.rotation_pattern is None:
         print "must supply the --log argument or the --rotation_pattern argument"
-        sys.exit(3)
+        sys.exit(2)
 
     if options.log_file is None and options.rotation_pattern is not None and options.log_prefix is None:
         print "with --rotation_pattern and no --log argument, you must also supply --log_prefix"
-        sys.exit(3)
+        sys.exit(2)
 
     if options.warning_pattern is None and options.critical_pattern is None:
         print "must supply ethier the --warning_pattern argument or the critical_pattern argument."
-        sys.exit(3)
+        sys.exit(2)
 
     try:
         lm = LogMonitor(
@@ -340,4 +341,4 @@ if __name__ == "__main__":
         lm.run()
     except Exception, e:
         print "FAILURE - %s" % e
-        sys.exit(3)
+        sys.exit(2)
