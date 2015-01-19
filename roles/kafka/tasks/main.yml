@@ -1,0 +1,82 @@
+---
+- name: make kafka group
+  group: name=kafka state=present
+  sudo: yes
+
+- name: make kafka user
+  user: name=kafka state=present group=kafka createhome=no shell=/sbin/nologin
+  sudo: yes
+
+- name: make kafka related directories
+  file: path={{item}} owner=kafka group=kafka state=directory
+  with_items:
+    - /var/run/kafka
+    - /var/log/kafka
+    - /var/lib/kafka-logs
+    - /disk1/kafka-logs
+
+- name: mkdir /etc/kafka
+  file: path={{ item }} state=directory
+  with_items:
+    - /etc/kafka
+
+- name: yum Install kafka
+  yum: name='kafka-0.8.1-1.el6.x86_64' state=installed
+  sudo: yes
+
+- name: Symlink /usr/lib/kafka
+  file: src={{ kafka_home }} dest='/usr/lib/kafka' state='link'
+  sudo: yes
+
+- name: mkdir /usr/lib/kafka/logs
+  file: path={{ kafka_home }}/logs state=directory group=kafka owner=kafka
+  sudo: yes
+
+- name: Symlink /etc/kafka/conf
+  file: src='{{ kafka_home }}/config' dest='/etc/kafka/conf' state='link'
+  sudo: yes
+
+- name: install kafka-env.sh
+  template: src={{ item }}.j2 dest={{ kafka_home }}/bin/{{ item }}
+  register: kafka_env_status
+  sudo: yes
+  with_items:
+    - kafka-env.sh
+
+- name: Copy Kafka startup script
+  copy: src={{ item }} dest={{ kafka_home }}/bin/{{ item }} mode=755
+  register: kafka_startup_script_status
+  sudo: yes
+  with_items:
+    - kafka.sh
+
+- name: Install Kafka startup script
+  file:  src={{ kafka_home }}/bin/{{ item }}.sh dest=/etc/init.d/{{ item }} state='link'
+  sudo: yes
+  with_items:
+    - kafka
+
+- name: Make Kafka start automagically after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - kafka
+
+- name: Setup Kafka config
+  template: src={{ item }}.j2 dest={{ kafka_conf_dir }}/{{ item }}
+  register: kafka_config_status
+  sudo: yes
+  with_items:
+    - server.properties
+    - consumer.properties
+
+- name: Start Kafka
+  service: name=kafka state=started
+  register: started_kafka
+  sudo: yes
+
+- name: re-run kafka when necessary
+  service: name=kafka state=restarted
+  when:
+    (kafka_env_status|changed or kafka_startup_script_status|changed or kafka_config_status|changed) and not started_kafka|changed
+  sudo: yes
