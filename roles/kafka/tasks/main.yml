@@ -20,9 +20,20 @@
   with_items:
     - /etc/kafka
 
-- name: yum Install kafka
-  yum: name='kafka-0.8.1-1.el6.x86_64' state=installed
+- name: copy kafka rpm to tmp (Get rid of me when the yum repo is ready)
+  copy: src={{ item }} dest=/tmp/{{ item }}
   sudo: yes
+  with_items:
+    - kafka-{{kafka_version}}.x86_64.rpm
+
+- name: yum Install kafka
+  yum: name=/tmp/{{ item }} state=installed
+  sudo: yes
+  with_items:
+    - kafka-{{kafka_version}}.x86_64.rpm
+  environment:
+    http_proxy: http://autoproxy.sbc.com/one-guest.pac
+
 
 - name: Symlink /usr/lib/kafka
   file: src={{ kafka_home }} dest='/usr/lib/kafka' state='link'

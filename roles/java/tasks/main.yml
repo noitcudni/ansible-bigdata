@@ -1,0 +1,50 @@
+- name: Remove OpenJdk
+  sudo: yes
+  yum: name={{item}} state=absent
+  with_items:
+    - java-1.7.0-openjdk
+    - java-1.7.0-openjdk-devel
+    - java-1.7.0-openjdk-javadoc
+    - java-1.7.0-openjdk-src
+    - java-1.6.0-openjdk
+    - java-1.6.0-openjdk-devel
+    - java-1.6.0-openjdk-javadoc
+    - java-1.6.0-openjdk-src
+
+
+- name: copy java rpm to /tmp (Get rid of me when the yum repo is ready)
+  copy: src={{ item }} dest=/tmp/{{ item }}
+  sudo: yes
+  with_items:
+    - jdk-{{jdk_version}}-linux-x64.rpm
+
+
+- name: Install Oracle Java
+  yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - jdk-{{jdk_version}}-linux-x64.rpm
+  environment:
+    http_proxy: http://autoproxy.sbc.com/one-guest.pac
+
+- name: symlink /usr/java/default for good measure
+  file: src=/usr/java/jdk1.8.0_25 dest={{java_home}} state=link
+  sudo: yes
+
+- shell: "grep JAVA_HOME /etc/environment"
+  sudo: yes
+  register: JAVA_HOME_result
+  ignore_errors: true
+
+- name: add JAVA_HOME into /etc/environment
+  sudo: yes
+  shell: "echo JAVA_HOME={{java_home}} >> /etc/environment"
+  when: not JAVA_HOME_result.stdout
+
+- name: Java symlink
+  sudo: yes
+  file: state=link src={{java_home}}/bin/{{item}} dest=/usr/bin/{{item}}
+  with_items:
+    - java
+    - javac
+

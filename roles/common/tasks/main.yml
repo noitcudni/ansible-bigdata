@@ -9,6 +9,8 @@
     - ntp
     - ntpdate.x86_64
     - libselinux-python
+  environment:
+    http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 - name: Ensure ntpd is on via chkconfig
   sudo: yes
@@ -25,6 +27,7 @@
   - epel.repo
   - epel.repo.key
 
+
 - name: Clear yum caches so stuff will not break
   sudo: yes
   shell: "yum clean all"
@@ -36,6 +39,8 @@
     - vim
     - tmux
     - lsof
+  environment:
+    http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 #### Create system users ####
 # TODO: take to Zab about what gid and uid have already been taken.
@@ -54,3 +59,8 @@
 - name: Ensure that nrpe user exists
   sudo: yes
   user: group=nrpe name=nrpe state=present uid=1001
+
+- command: /bin/true
+  register: ran_common
+
+

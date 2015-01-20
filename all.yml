@@ -1,0 +1,28 @@
+#- hosts: all
+  #sudo: True
+  #roles:
+    ##- { role: common }
+    #- { role: java }
+
+
+#- hosts: NRPE
+  #sudo: True
+  #roles:
+    #- { role: NRPE }
+
+#- hosts: Shinken
+  #sudo: True
+  #roles:
+    #- { role: shinken }
+
+
+- hosts: Kafkas
+  sudo: True
+  roles:
+    - { role: kafka }
+
+- hosts: KafkaZookeepers
+  sudo: True
+  roles:
+    - { role: Zookeeper }
+

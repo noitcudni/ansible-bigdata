@@ -1,8 +1,16 @@
 # Variables for only this role
+kafka:
+    prod_interface: bond0
+    clientport: 9092
+    # production looks like this
+    log_dirs: /opt/kafka-logs #TODO: where should the kafka data log go in production?
+
+zookeeper_clientport: 2182
 kafka_jmx_port: 9010
 kafka_heap_opts: -Xmx3072M -Xms3072M
 kafka_conf_dir: /etc/kafka/conf
 log_dir: /var/log/kafka
-kafka_home: /usr/lib/kafka_2.8.0-0.8.1
+kafka_version: 2.9.2-0.8.1.1
+kafka_home: /usr/lib/kafka_{{kafka_version}}
 kafka_num_partitions: 2
 replica_fetch_max_bytes: 7295552
