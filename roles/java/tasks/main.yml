@@ -23,7 +23,7 @@
   yum: name={{item}} state=installed
   sudo: yes
   with_items:
-    - jdk-{{jdk_version}}-linux-x64.rpm
+    - /tmp/jdk-{{jdk_version}}-linux-x64.rpm
   environment:
     http_proxy: http://autoproxy.sbc.com/one-guest.pac
 

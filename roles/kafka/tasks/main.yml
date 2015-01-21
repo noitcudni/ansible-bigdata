@@ -31,8 +31,8 @@
   sudo: yes
   with_items:
     - kafka-{{kafka_version}}.x86_64.rpm
-  environment:
-    http_proxy: http://autoproxy.sbc.com/one-guest.pac
+  #environment:
+    #http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 
 - name: Symlink /usr/lib/kafka

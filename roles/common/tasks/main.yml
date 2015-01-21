@@ -9,8 +9,8 @@
     - ntp
     - ntpdate.x86_64
     - libselinux-python
-  environment:
-    http_proxy: http://autoproxy.sbc.com/one-guest.pac
+  #environment:
+    #http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 - name: Ensure ntpd is on via chkconfig
   sudo: yes
@@ -27,6 +27,11 @@
   - epel.repo
   - epel.repo.key
 
+- name: Install HDP2 yum repo
+  sudo: yes
+  copy: src={{item}} dest=/etc/yum.repos.d/{{item}} mode=0644
+  with_items:
+  - HDP.repo
 
 - name: Clear yum caches so stuff will not break
   sudo: yes
@@ -39,8 +44,8 @@
     - vim
     - tmux
     - lsof
-  environment:
-    http_proxy: http://autoproxy.sbc.com/one-guest.pac
+  #environment:
+    #http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 #### Create system users ####
 # TODO: take to Zab about what gid and uid have already been taken.

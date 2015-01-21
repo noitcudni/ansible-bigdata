@@ -1,0 +1,57 @@
+---
+- name: make zookeeper user
+  user: name=zookeeper state=present
+  sudo: yes
+
+
+- name: make zookeeper group
+  group: name=hadoop state=present
+  sudo: yes
+
+- name: create zookeeper log directory
+  file: path={{ zookeeper_log_dir }} state=directory mode=755 group=hadoop owner=zookeeper
+  sudo: yes
+
+- name: create zookeeper pid directory
+  file: path={{ zookeeper_pid_dir }} state=directory mode=755 group=hadoop owner=zookeeper
+  sudo: yes
+
+- name: create zookeeper data directory
+  file: path={{ zookeeper_data_dir }} state=directory mode=755 group=hadoop owner=zookeeper
+  sudo: yes
+
+- name: create zookeeper id file
+  template: src={{ item }}.j2 dest={{ zookeeper_data_dir }}/{{ item }} group=hadoop owner=zookeeper
+  #sudo_user: zookeeper
+  with_items:
+    - myid
+
+- name: yum install zookeeper-server
+  yum: name=zookeeper-server state=installed
+  sudo: yes
+
+# /etc/init.d/zookeeper-server comes with the zookeeper-server rpm package,
+# but the script makes reference to the zookeeper group.
+- name: Copy our version of the zookeeper init script with the correct group name.
+  copy: src={{ item }} dest=/etc/init.d/{{ item }} owner=root group=root mode=755
+  sudo: yes
+  with_items:
+    - zookeeper-server
+
+- name: Copy the configuration file for zookeeper
+  template: src={{ item }}.j2 dest=/etc/zookeeper/conf/{{ item }}
+  notify: restart zookeeper
+  sudo: yes
+  with_items:
+    - zoo.cfg
+    - zookeeper-env.sh
+
+#- name: initialize the zookeeper
+  #shell: creates=/var/lib/zookeeper/myid service zookeeper-server init --myid={{zoo_id}}
+  #sudo: yes
+
+- name: Setup a cron job to clean up old zookeeper data and snapshot
+  template: src={{ item }}.j2 dest=/etc/cron.d/{{ item }} owner=root group=root
+  with_items:
+    - zookeeper-cleanup.cron
+  sudo: yes

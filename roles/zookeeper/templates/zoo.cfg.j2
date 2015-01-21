@@ -1,0 +1,9 @@
+tickTime=2000
+dataDir={{ zookeeper_data_dir }}
+clientPort={{ zookeeper_clientport }}
+initLimit=5
+syncLimit=2
+{% for host in groups['KafkaZookeepers'] %}
+server.{{ hostvars[host].zoo_id }}={{ host }}:{{ zookeeper_leader_port }}:{{ zookeeper_election_port }}
+{% endfor %}
+
