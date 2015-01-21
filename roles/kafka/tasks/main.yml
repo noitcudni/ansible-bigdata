@@ -15,6 +15,9 @@
     - /var/lib/kafka-logs
     - /disk1/kafka-logs
 
+- name: make kafka data log directory
+  file: path={{kafka.log_dirs}} owner=kafka group=kafka state=directory
+
 - name: mkdir /etc/kafka
   file: path={{ item }} state=directory
   with_items:

@@ -1,2 +1,2 @@
 java_home: /usr/java/default
-
+zookeeper_clientport: 2182

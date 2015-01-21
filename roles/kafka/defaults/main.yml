@@ -6,6 +6,7 @@ kafka:
     log_dirs: /opt/kafka-logs #TODO: where should the kafka data log go in production?
 
 zookeeper_clientport: 2182
+
 kafka_jmx_port: 9010
 kafka_heap_opts: -Xmx3072M -Xms3072M
 kafka_conf_dir: /etc/kafka/conf
