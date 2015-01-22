@@ -14,6 +14,22 @@ CMD="java  $JAVA_OPTS -Dingestion.log.level=WARN,stdout,SERVER   -Dserver.proper
 
 JETTY_PID={{jetty_run_dir}}/jetty.pid
 
+jetty_is_process_alive() {
+  local pid="$1"
+  ps -fp $pid |  grep $pid | grep jetty > /dev/null 2>&1
+}
+
+jetty_check_pidfile() {
+  local pidfile="$1"
+  local pid
+  pid=`cat "$pidfile" 2>/dev/null`
+  if [ $pid == '' ]; then
+    return 1 # the file is either empty or doesn't exist
+  fi
+
+  jetty_is_process_alive $pid
+}
+
 start() {
   echo "Starting jetty server."
 
@@ -31,19 +47,25 @@ stop() {
 ### main logic ###
 case "$1" in
   start)
-        start
-        ;;
+    start
+    ;;
   stop)
-        stop
-        ;;
+    stop
+    ;;
   status)
-        ;;
+    if jetty_check_pidfile $JETTY_PID; then
+      echo "Jetty is running"
+    else
+      echo "Jetty not running"
+      exit 1
+    fi
+    ;;
   restart|reload|condrestart)
-        stop
-        start
-        ;;
+    stop
+    start
+    ;;
   *)
-        echo $"Usage: $0 {start|stop|restart|reload|status}"
-        exit 1
+    echo $"Usage: $0 {start|stop|restart|reload|status}"
+    exit 1
 esac
 exit 0
