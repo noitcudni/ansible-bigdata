@@ -21,7 +21,7 @@ topics=\
 {%- endfor %}
 
 
-metadata.broker.list=
+metadata.broker.list={{groups['Kafkas'] | join("%d," % kafka.clientport)}}:{{kafka.clientport}}
 
 #serializer.class=kafka.serializer.StringEncoder
 #partitioner.class=com.att.cip.datafeedsystem.kafka.partitioner.TimePartitioner
