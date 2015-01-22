@@ -2,6 +2,7 @@ jetty_install_dir: /usr/lib/jetty
 jetty_log_dir: /var/log/jetty
 jetty_etc_dir: /etc/jetty
 jetty_keystore_dir: /usr/lib/jetty/keystore
+jetty_run_dir: /var/run
 
 feed_topic_schema_list:
   - feed: attwifi_phone
