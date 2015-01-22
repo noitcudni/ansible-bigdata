@@ -47,10 +47,16 @@ stop() {
 ### main logic ###
 case "$1" in
   start)
-    start
+    if jetty_check_pidfile $JETTY_PID; then
+      echo "Jetty has already been started."
+    else
+      start
+    fi
     ;;
   stop)
-    stop
+    if jetty_check_pidfile $JETTY_PID; then
+      stop
+    fi
     ;;
   status)
     if jetty_check_pidfile $JETTY_PID; then
