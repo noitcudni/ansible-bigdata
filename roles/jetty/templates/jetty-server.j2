@@ -23,7 +23,7 @@ jetty_check_pidfile() {
   local pidfile="$1"
   local pid
   pid=`cat "$pidfile" 2>/dev/null`
-  if [ $pid == '' ]; then
+  if [ "$pid" = '' ]; then
     return 1 # the file is either empty or doesn't exist
   fi
 
