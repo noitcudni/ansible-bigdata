@@ -48,4 +48,6 @@
   with_items:
     - jetty-server
 
-
+- name: Start jetty
+  service: name=jetty-server state=started
+  sudo: yes
