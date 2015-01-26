@@ -42,3 +42,10 @@
   with_items:
     - server.properties
 
+- name: Make jetty start automagically after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - jetty-server
+
+
