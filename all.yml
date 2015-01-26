@@ -16,13 +16,17 @@
     #- { role: shinken }
 
 
-- hosts: KafkaZookeepers
+#- hosts: KafkaZookeepers
+  #sudo: True
+  #roles:
+    #- { role: zookeeper }
+
+#- hosts: Kafkas
+  #sudo: True
+  #roles:
+    #- { role: kafka }
+
+- hosts: Jettys
   sudo: True
   roles:
-    - { role: Zookeeper }
-
-- hosts: Kafkas
-  sudo: True
-  roles:
-    - { role: kafka }
-
+    - { role: jetty }

@@ -1,0 +1,79 @@
+#!/bin/bash
+#
+# description: Jetty server
+#
+# chkconfig: 2345 70 10
+#
+# Get function from functions library
+# Start the service FOO
+. /lib/init.d/functions
+
+JETTY_GC_LOG_OPTS="-Xloggc:{{jetty_log_dir}}/jetty_gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps"
+
+JAVA_OPTS="-server -XX:+UseCompressedOops -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Xms1024m -Xmx10240m -XX:MaxPermSize=512m $JETTY_GC_LOG_OPTS"
+
+CMD="java  $JAVA_OPTS -Dingestion.log.level=WARN,stdout,SERVER   -Dserver.properties={{jetty_etc_dir}}/conf/server.properties -jar {{jetty_install_dir}}/data-feed-rest-server.jar&"
+
+JETTY_PID={{jetty_run_dir}}/jetty.pid
+
+jetty_is_process_alive() {
+  local pid="$1"
+  ps -fp $pid |  grep $pid | grep jetty > /dev/null 2>&1
+}
+
+jetty_check_pidfile() {
+  local pidfile="$1"
+  local pid
+  pid=`cat "$pidfile" 2>/dev/null`
+  if [ "$pid" = '' ]; then
+    return 1 # the file is either empty or doesn't exist
+  fi
+
+  jetty_is_process_alive $pid
+}
+
+start() {
+  echo "Starting jetty server."
+
+  ### Create the lock file ###
+  eval $CMD
+  echo $! > $JETTY_PID
+}
+# Restart the service FOO
+stop() {
+  echo "stopping jetty server."
+  kill -9 `cat $JETTY_PID`
+  rm -f $JETTY_PID
+}
+
+### main logic ###
+case "$1" in
+  start)
+    if jetty_check_pidfile $JETTY_PID; then
+      echo "Jetty has already been started."
+    else
+      start
+    fi
+    ;;
+  stop)
+    if jetty_check_pidfile $JETTY_PID; then
+      stop
+    fi
+    ;;
+  status)
+    if jetty_check_pidfile $JETTY_PID; then
+      echo "Jetty is running"
+    else
+      echo "Jetty not running"
+      exit 1
+    fi
+    ;;
+  restart|reload|condrestart)
+    stop
+    start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|reload|status}"
+    exit 1
+esac
+exit 0

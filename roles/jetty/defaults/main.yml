@@ -1,0 +1,185 @@
+jetty_install_dir: /usr/lib/jetty
+jetty_log_dir: /var/log/jetty
+jetty_etc_dir: /etc/jetty
+jetty_keystore_dir: /usr/lib/jetty/keystore
+jetty_run_dir: /var/run
+
+feed_topic_schema_list:
+  - feed: attwifi_phone
+    topic: attwifi_phone
+    schema: schema.nelos
+  - feed: awsv
+    topic: awsv
+    schema: schema.nelos
+  - feed: nelos_loc
+    topic: nelos_loc
+    schema: schema.nelos
+  - feed: cmp_dl
+    topic: cmp_dl
+    schema: schema.nelos
+  - feed: cmp_cl
+    topic: cmp_cl
+    schema: schema.nelos
+  - feed: mobility_bridge
+    topic: mobility_bridge
+    schema: schema.nelos
+  - feed: smsd
+    topic: smsd
+    schema: schema.nelos
+  - feed: wifi_smart
+    topic: wifi_smart
+    schema: schema.nelos
+  - feed: attwifi_session
+    topic: attwifi_session
+    schema: schema.nelos
+  - feed: ran_celltower
+    topic: ran_celltower
+    schema: schema.nelos
+  - feed: safe_smsd
+    topic: safe_smsd
+    schema: schema.nelos
+  - feed: safe_awsv
+    topic: safe_awsv
+    schema: schema.nelos
+  - feed: safe_bridge
+    topic: safe_bridge
+    schema: schema.nelos
+  - feed: safe_nelos
+    topic: safe_nelos
+    schema: schema.nelos
+  - feed: safe_wifi_session
+    topic: safe_wifi_session
+    schema: schema.nelos
+  - feed: safe_wifi_phone
+    topic: safe_wifi_phone
+    schema: schema.nelos
+  - feed: safe_cmp
+    topic: safe_cmp
+    schema: schema.nelos
+  - feed: cnsmr_indiv_infor_stg
+    topic: safe_acxiom_individual
+    schema: schema.nelos
+  - feed: cnsmr_hshld_indiv_acct_stg
+    topic: safe_acxiom_customer
+    schema: schema.nelos
+  - feed: cnsmr_hshld_infor_stg
+    topic: safe_acxiom_household
+    schema: schema.nelos
+  - feed: safe_wifi_smart
+    topic: safe_wifi_smart
+    schema: schema.nelos
+  - feed: safe_sub_household
+    topic: safe_sub_household
+    schema: schema.nelos
+  - feed: safe_tlg_blacct
+    topic: safe_tlg_blacct
+    schema: schema.nelos
+  - feed: safe_closenuph
+    topic: safe_closenuph
+    schema: schema.nelos
+  - feed: file_awsv
+    topic: lab_march_awsv
+    schema: schema.nelos
+  - feed: file_smsd
+    topic: lab_march_smsd
+    schema: schema.nelos
+  - feed: file_nelos
+    topic: lab_march_nelos
+    schema: schema.nelos
+  - feed: safe_webtrends
+    topic: safe_webtrends
+    schema: schema.nelos
+  - feed: crm_accnt
+    topic: safe_tlg_crm_accnt
+    schema: schema.nelos
+  - feed: crm_sub
+    topic: safe_tlg_crm_sub
+    schema: schema.nelos
+  - feed: file_closenuph
+    topic: file_closenuph
+    schema: schema.nelos
+  - feed: file_awsd
+    topic: safe_awsd
+    schema: schema.nelos
+  - feed: file_apigee
+    topic: file_apigee
+    schema: schema.nelos
+  - feed: file_laccid_map
+    topic: file_laccid_map
+    schema: schema.nelos
+  - feed: alc
+    topic: alc
+    schema: schema.nelos
+  - feed: acct_dtl
+    topic: safe_cimcdr_acct_dtl
+    schema: schema.nelos
+  - feed: acct_cust_loc_hist
+    topic: safe_cimcdr_acct_cust_loc_hist
+    schema: schema.nelos
+  - feed: safe_anon_mobbridge
+    topic: safe_anon_mobbridge
+    schema: schema.nelos
+  - feed: safe_anon_mpsys
+    topic: safe_anon_mpsys
+    schema: schema.nelos
+  - feed: safe_anon_udas
+    topic: safe_anon_udas
+    schema: schema.nelos
+  - feed: safe_anon_aws_sesion
+    topic: safe_anon_aws_sesion
+    schema: schema.nelos
+  - feed: safe_anon_venue
+    topic: safe_anon_venue
+    schema: schema.nelos
+  - feed: acxiom_household
+    topic: acxiom_household
+    schema: schema.nelos
+  - feed: acxiom_customer
+    topic: acxiom_customer
+    schema: schema.nelos
+  - feed: acxiom_individual
+    topic: acxiom_individual
+    schema: schema.nelos
+  - feed: test_nelos
+    topic: test_nelos
+    schema: schema.nelos
+  - feed: safe_anon_mob_ddr
+    topic: safe_anon_mob_ddr
+    schema: schema.nelos
+  - feed: safe_anon_seti
+    topic: safe_anon_seti
+    schema: schema.nelos
+  - feed: safe_anon_awsd_lab
+    topic: safe_anon_awsd_lab
+    schema: schema.nelos
+  - feed: safe_anon_uverse_bridge
+    topic: safe_anon_uverse_bridge
+    schema: schema.nelos
+  - feed: safe_anon_sub_hh
+    topic: safe_anon_sub_hh
+    schema: schema.nelos
+  - feed: bias_ajstmnt_sf_anon
+    topic: bias_ajstmnt_sf_anon
+    schema: schema.nelos
+  - feed: ss_site_master
+    topic: cssng_ss_site_master
+    schema: schema.nelos
+  - feed: ss_radiobasestationssector
+    topic: cssng_ss_radiobasestationsector
+    schema: schema.nelos
+  - feed: ss_radiobasestation
+    topic: cssng_ss_radiobasestation
+    schema: schema.nel
+
+
+server:
+  http_port: 8701
+  https_port: 8703
+  min_threads: 20
+  max_threads: 75
+  keys_dir: "{{ jetty_keystore_dir }}"
+  keystore_password: l1t3sp33dr@c3R
+  basic_auth_username: router
+  basic_auth_password: R0uter123
+  basic_auth_realm: private
+

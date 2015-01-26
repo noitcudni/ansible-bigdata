@@ -1,0 +1,58 @@
+ssl.enabled=true
+http.host={{ansible_hostname}}
+http.port={{server.http_port}}
+https.port={{server.https_port}}
+server.min.num.threads={{server.min_threads}}
+server.max.num.threads={{server.max_threads}}
+keys.dir={{server.keys_dir}}
+keystore.password={{server.keystore_password}}
+basic.auth.username={{server.basic_auth_username}}
+basic.auth.password={{server.basic_auth_password}}
+basic.auth.realm={{server.basic_auth_realm}}
+services=com.att.cip.datafeedsystem.services.KafkaTopicLookupService,com.att.cip.datafeedsystem.services.KafkaProducerService
+topics=\
+{% for item in feed_topic_schema_list -%}
+  {% if loop.index == 1 -%}
+  {{item.feed}}={{item.topic}}={{item.schema}}
+  {%- else -%}
+  ,\
+  {{item.feed}}={{item.topic}}={{item.schema}}
+  {%- endif %}
+{%- endfor %}
+
+
+metadata.broker.list={{groups['Kafkas'] | join("%d," % kafka.clientport)}}:{{kafka.clientport}}
+
+#serializer.class=kafka.serializer.StringEncoder
+#partitioner.class=com.att.cip.datafeedsystem.kafka.partitioner.TimePartitioner
+
+request.required.acks=1
+producer.type=async
+batch.num.messages=16384
+buffer.memory=536870912
+producer.pool.num.producers=10
+upload.directory=/nfs-data/data
+write.to.file.enabled=true
+write.to.file.feeds=bias_ajstmnt_sf_anon,\
+       file_apigee,\
+       file_awsd,\
+       file_awsv,\
+       file_closenuph,\
+       file_laccid_map,\
+       file_nelos,\
+       file_smsd,\
+       safe_anon_aws_sesion,\
+       safe_anon_awsd_lab,\
+       safe_anon_mob_ddr,\
+       safe_anon_mobbridge,\
+       safe_anon_mpsys,\
+       safe_anon_seti,\
+       safe_anon_sub_hh,\
+       safe_anon_udas,\
+       safe_anon_uverse_bridge,\
+       safe_anon_venue,\
+       wifi_smart
+
+delimiter=|
+schema.nelos=time_stamp|station_type|station_id|longitude|latitude|altitude|loc_method|loc_accuracy
+metrics.enabled=false

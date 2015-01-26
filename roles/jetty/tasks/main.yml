@@ -1,0 +1,53 @@
+- name: mkdir jetty installed directory
+  file: path={{jetty_install_dir}} state=directory
+  sudo: yes
+
+- name: mkdir jetty log directory
+  file: path={{jetty_log_dir}} state=directory
+  sudo: yes
+
+- name: mkdir jetty etc directory
+  file: path={{jetty_etc_dir}} state=directory
+  sudo: yes
+
+- name: mkdir jetty etc directory
+  file: path={{jetty_etc_dir}}/conf state=directory
+  sudo: yes
+
+- name: mkdir jetty keystore directory
+  file: path={{jetty_keystore_dir}} state=directory
+  sudo: yes
+
+- name: copy our jar file to jetty's installed directory
+  copy: src={{item}} dest={{jetty_install_dir}}
+  sudo: yes
+  with_items:
+    - data-feed-rest-server.jar
+
+- name: Install jetty startup script
+  template: src={{item}}.j2 dest=/etc/init.d/{{item}} mode=0755
+  sudo: yes
+  with_items:
+    - jetty-server
+
+
+- name: Install keystore
+  copy: src={{item}} dest={{jetty_keystore_dir}}
+  sudo: yes
+  with_items:
+    - keystore.jks
+
+- name: install server.property
+  template: src={{item}}.j2 dest={{jetty_etc_dir}}/conf/{{item}}
+  with_items:
+    - server.properties
+
+- name: Make jetty start automagically after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - jetty-server
+
+- name: Start jetty
+  service: name=jetty-server state=started
+  sudo: yes
