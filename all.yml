@@ -36,7 +36,7 @@
   #roles:
     #- { role: couch_common }
 
-- hosts: CouchMasters
+- hosts: CouchWeb
   sudo: True
   roles:
-    - { role: couch_master }
+    - { role: couch_web}
