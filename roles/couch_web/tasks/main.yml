@@ -1,0 +1,21 @@
+- name: Retarded 20-second sleep because after Couchbase installed, not running for a while
+  shell: sleep 20
+
+- name: How much memory do you want to give CouchBase
+  set_fact:
+    couchmen: "{{couch_mem}}"
+
+- name: Cluster Init zeroeth Couchbase
+  ignore_errors: yes
+  shell: /opt/couchbase/bin/couchbase-cli cluster-init --cluster={{groups.CouchWeb[0]}}:8091 --cluster-init-username={{couch_user}} --cluster-init-password={{couch_password}} --cluster-init-ramsize={{ couch_mem | int}}
+
+- name: Add the other couchbases to the cluster
+  ignore_errors: yes
+  shell: >
+    /opt/couchbase/bin/couchbase-cli rebalance --cluster={{groups.CouchWeb[0]}}:8091 -u {{couch_user}} -p {{couch_password}} --server-add={{item}}:8091 --server-add-username={{couch_user}} --server-add-password={{couch_password}}
+  with_items: groups.CouchBases
+
+- name: Allocate buckets
+  ignore_errors: yes
+  shell: /opt/couchbase/bin/couchbase-cli bucket-create --cluster={{groups.CouchWeb[0]}}:8091 --bucket={{item.name}} --bucket-type={{item.bucket_type}} --bucket-ramsize={{item.ram | int}} --bucket-replica={{item.replica}} -u {{couch_user}} -p {{couch_password}}
+  with_items: bucket_list

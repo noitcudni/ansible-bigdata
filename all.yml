@@ -26,7 +26,17 @@
   #roles:
     #- { role: kafka }
 
-- hosts: Jettys
+#- hosts: Jettys
+  #sudo: True
+  #roles:
+    #- { role: jetty }
+
+#- hosts: CouchCommons
+  #sudo: True
+  #roles:
+    #- { role: couch_common }
+
+- hosts: CouchMasters
   sudo: True
   roles:
-    - { role: jetty }
+    - { role: couch_master }
