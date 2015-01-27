@@ -1,0 +1,23 @@
+#TODO
+- name: copy couchbase rpm to tmp (Get rid of me when the yum repo is ready)
+  copy: src={{ item }} dest=/tmp/{{ item }}
+  sudo: yes
+  with_items:
+    - couchbase-server-enterprise-3.0.2-centos6.x86_64.rpm
+
+
+- name: Install CouchBase
+  yum: name=/tmp/{{item}} state=installed
+  with_items:
+    - couchbase-server-enterprise-3.0.2-centos6.x86_64.rpm
+
+- name: make couchbase group
+  group: name=couchbase state=present
+  sudo: yes
+
+- name: make couchbase user
+  user: name=couchbase group=couchbase state=present createhome=no shell=/sbin/nologin
+  sudo: yes
+
+- name: Ensure Couchbase data directory exists and owned by Couchbase user
+  file: path=/var/lib/couchbase owner=couchbase group=couchbase state=directory

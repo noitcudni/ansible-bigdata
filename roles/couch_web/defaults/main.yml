@@ -1,0 +1,15 @@
+couch_user: couchuser
+couch_password: couchuser
+couch_mem: 1024
+
+bucket_list:
+
+  - name: foo
+    replica: 2
+    ram: 256
+    bucket_type: couchbase
+
+  - name: bar
+    replica: 2
+    ram: 256
+    bucket_type: couchbase

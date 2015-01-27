@@ -23,6 +23,7 @@
   with_items:
     - /etc/kafka
 
+# TODO
 - name: copy kafka rpm to tmp (Get rid of me when the yum repo is ready)
   copy: src={{ item }} dest=/tmp/{{ item }}
   sudo: yes
