@@ -1,3 +1,9 @@
+- name: Install dependency
+  sudo: yes
+  yum: name={{item}} state=installed
+  with_items:
+    - libselinux-python
+
 - name: Remove OpenJdk
   sudo: yes
   yum: name={{item}} state=absent

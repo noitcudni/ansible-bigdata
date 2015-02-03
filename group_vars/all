@@ -2,8 +2,10 @@ java_home: /usr/java/default
 zookeeper_clientport: 2182
 
 kafka:
-    prod_interface: bond0
-    clientport: 9092
-    # production looks like this
-    log_dirs: /opt/kafka-logs #TODO: where should the kafka data log go in production?
+  prod_interface: bond0
+  clientport: 9092
+  # production looks like this
+  log_dirs: /opt/kafka-logs #TODO: where should the kafka data log go in production?
 
+zookeeper:
+  clientport: 2182 
