@@ -70,3 +70,8 @@
       - NAGIOS_SERVER
       - GANGLIA_SERVER
       - ZOOKEEPER_SERVER
+
+
+- hosts: 127.0.0.1
+  roles:
+    - { role: blueprint_execute }

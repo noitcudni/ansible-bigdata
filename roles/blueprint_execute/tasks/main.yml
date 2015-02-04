@@ -1,0 +1,2 @@
+- name: execute blueprint
+  local_action: blueprint_execute blueprint_name=bdcoe ambari_password=admin nagios_contact={{nagios_contact}}

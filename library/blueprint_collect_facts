@@ -23,6 +23,25 @@ def read_json(json_filename):
 
 
 def collect_blueprint(module):
+    """
+    Two output file:
+    blueprint_component.json 
+    {
+        host_group_name : [
+            component1,
+            component2,
+        ], 
+        ...
+    }
+
+    blueprint_cluster.json
+    {
+        host_group_name : [
+            host1,
+            host2,
+        ]
+    }
+    """
     group_name = module.params.get('groupname')
     component_lst = json.loads(module.params.get('components').replace("'", '"'))
     host_name = module.params.get('hostname')
@@ -60,9 +79,9 @@ def collect_blueprint(module):
 def main():
     module = AnsibleModule(
         argument_spec = dict (
-            hostname=dict(),
-            groupname=dict(),
-            components=dict(),
+            hostname=dict(required=True),
+            groupname=dict(required=True),
+            components=dict(required=True),
         ) 
     )
     result = collect_blueprint(module)

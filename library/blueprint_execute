@@ -1,0 +1,72 @@
+#!/usr/bin/python
+import json
+from ansible.module_utils.basic import *
+
+TMP_BLUEPRINT_CLUSTER_JSON_FILE = "/tmp/blueprint_cluster.json"
+TMP_BLUEPRINT_COMPONENT_JSON_FILE = "/tmp/blueprint_component.json"
+
+def execute_blueprint(module):
+    blueprint_name = module.params.get('blueprint_name')
+    ambari_password = module.params.get('ambari_password')
+    nagios_contact = module.params.get('nagios_contact')
+
+    # construct cluster json
+    cluster_json_data = None
+    with open(TMP_BLUEPRINT_CLUSTER_JSON_FILE, 'r') as f:
+        cluster_json_data = json.loads(f.read())
+
+    cluster_creation_json = {
+        "blueprint" : blueprint_name,
+        "default_password" : ambari_password,
+        "host_groups" : []
+    }
+    
+    for k,v in cluster_json_data.items():
+        host_group_dict = {
+            "name": k,
+            "hosts": list(dict([("fqdn", x)]) for x in v)
+        }
+        cluster_creation_json['host_groups'].append(host_group_dict)
+
+    # construct blueprint json
+    with open(TMP_BLUEPRINT_COMPONENT_JSON_FILE, 'r') as f:
+        blueprint_json_data = json.loads(f.read())
+         
+    blueprint_creation_json = {
+        "configurations" : {
+            "nagios_contact" : nagios_contact
+        },
+        "Blueprints" : {
+            "blueprint_name" : blueprint_name,
+            "stack_name": "HDP",
+            "stack_version" : "2.2",
+        },
+        "host_groups" : [],
+    }
+    for k,v in blueprint_json_data.items():
+        blueprint_creation_json['host_groups'].append({
+            "name" : k,
+            "components" : list(dict([("name", x)]) for x in v)
+        })
+
+
+    return {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
+            'cluster_creation_json': cluster_creation_json, 'blueprint_creation_json': blueprint_creation_json}
+
+
+    
+def main():
+    module = AnsibleModule(
+        argument_spec = dict (
+            blueprint_name=dict(required=True),
+            ambari_password=dict(required=True),
+            nagios_contact=dict(required=True),
+        ) 
+    )
+    result = execute_blueprint(module)
+    module.exit_json(**result)
+
+
+if __name__ == "__main__":
+    main()
+
