@@ -1,2 +1,3 @@
 - name: collect blueprint info
-  local_action: blueprint_collect_facts
+  local_action: blueprint_collect_facts hostname="{{inventory_hostname}}" groupname="{{groupname}}" components="{{hdp}}"
+

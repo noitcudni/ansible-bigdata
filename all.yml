@@ -1,7 +1,7 @@
 #- hosts: all
   #sudo: True
   #roles:
-    ##- { role: common }
+    #- { role: common }
     #- { role: java }
 
 
@@ -36,7 +36,37 @@
   #roles:
     #- { role: couch_common }
 
-- hosts: CouchWeb
-  sudo: True
+#- hosts: CouchWeb
+  #sudo: True
+  #roles:
+    #- { role: couch_web}
+
+#- hosts: Ambari
+  #sudo: True
+  #roles:
+    #- { role: ambari }
+
+- hosts: Slaves
   roles:
-    - { role: couch_web}
+    - { role: blueprint , groupname: slaves }
+  vars:
+    hdp:
+      - DATANODE
+      - HDFS_CLIENT
+      - NODEMANAGER
+      - YARN_CLIENT
+      - MAPREDUCE2_CLIENT
+      - ZOOKEEPER_CLIENT
+
+- hosts: Masters
+  roles:
+    - { role: blueprint , groupname: masters }
+  vars:
+    hdp:
+      - NAMENODE
+      - SECONDARY_NAMENODE
+      - RESOURCEMANAGER
+      - HISTORYSERVER
+      - NAGIOS_SERVER
+      - GANGLIA_SERVER
+      - ZOOKEEPER_SERVER
