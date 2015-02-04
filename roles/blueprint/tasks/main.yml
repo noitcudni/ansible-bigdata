@@ -1,0 +1,2 @@
+- name: collect blueprint info
+  local_action: blueprint_collect_facts

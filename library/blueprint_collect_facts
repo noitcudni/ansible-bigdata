@@ -1,0 +1,26 @@
+#!/usr/bin/python
+import json
+from ansible.module_utils.basic import *
+
+TMP_BLUEPRINT_CLUSTER_JSON_FILE = "/tmp/blueprint_cluster.json"
+TMP_BLUEPRINT_COMPONENT_JSON_FILE = "/tmp/blueprint_component.json"
+
+"""
+
+"""
+
+def collect_blueprint(module):
+    return {'changed': True}
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict (
+        ) 
+    )
+    result = collect_blueprint(module)
+    module.exit_json(**result)
+
+
+if __name__ == "__main__":
+    main()
