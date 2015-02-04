@@ -1,0 +1,48 @@
+- name: Disable SELinux in runtime
+  shell: "setenforce 0"
+  sudo: yes
+
+- name: Disable SELinux for good
+  lineinfile: dest=/etc/selinux/config regexp=^SELINUX= line=SELINUX=disabled
+  sudo: yes
+
+- name: Install ambari repo
+  copy: src=ambari.repo dest=/etc/yum.repos.d/ambari.repo mode=0644
+  sudo: yes
+
+- name: yum install ambari-server
+  yum: name='ambari-server'
+  sudo: yes
+
+- name: turn off iptables
+  service: name='iptables' state='stopped'
+  sudo: yes
+
+- shell: "grep java.home={{java_home}} /etc/ambari-server/conf/ambari.properties"
+  register: setup_ambari_server
+  ignore_errors: true
+
+- name: update ambari-password so ambari-server can connect to mysql
+  template: src=password.dat.j2 dest=/etc/ambari-server/conf/password.dat
+  sudo: yes
+
+- name: setup ambari-server
+  shell: >
+    /usr/sbin/ambari-server setup -j /usr/java/default -s
+    {% if databasehost is defined -%} --databasehost={{databasehost}} {%- endif %}
+    {% if databasename is defined -%} --databasename={{databasename}} {%- endif %}
+    {% if databasepassword is defined -%} --databasepassword={{databasepassword}} {%- endif %}
+    {% if databaseusername is defined -%} --databaseusername={{databaseusername}} {%- endif %}
+    {% if database is defined -%} --database={{database}} {%- endif %}
+    {% if databaseport is defined -%} --databaseport={{databaseport}} {%- endif %}
+  sudo: yes
+  when: not setup_ambari_server.stdout
+  async: 200
+  poll: 5
+
+- name: start ambari-server
+  shell: /usr/sbin/ambari-server start
+  sudo: yes
+  async: 100
+  poll: 5
+
