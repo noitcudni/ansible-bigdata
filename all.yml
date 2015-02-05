@@ -74,4 +74,7 @@
 
 - hosts: 127.0.0.1
   roles:
-    - { role: blueprint_execute }
+    - { role: blueprint_execute,
+        blueprint_name: bdcoe,
+        cluster_name: radiohead,
+        nagios_contact: lc024q@att.com }
