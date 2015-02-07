@@ -69,6 +69,16 @@ class TestLogMonitoring(object):
             self.WARNING_PATTERN, self.CRITICAL_PATTERN,
             None, self.ROTATION_PATTERN,
         )
+        self.lm_bdcoe = LogMonitor(
+            log_filename=None,
+            cached_path=self.CACHED_PATH,
+            warning_pattern=None,
+            critical_pattern="error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure",
+            ok_pattern=None,
+            rotation_pattern="cssng_ss_radiobasestation[0-9]{8}\.log",
+            log_prefix="cssng_ss_radiobasestation[0-9]{8}",
+        )
+
 
 
     def teardown(self):
@@ -86,6 +96,9 @@ class TestLogMonitoring(object):
 
         if os.path.isfile(self.lm_no_ok_pattern.cached_filename):
             os.remove(self.lm.cached_filename)
+
+        if os.path.isfile(self.lm_bdcoe.cached_filename):
+            os.remove(self.lm_bdcoe.cached_filename)
 
 
     def test_log__empty_log_no_cached(self):
@@ -198,6 +211,13 @@ class TestLogMonitoring(object):
         status_code = self.lm_no_ok_pattern._run_impl()
 
         assert status_code == 0, "OK_pattern is omitted. Shouldn't fire off old errors."
+        assert os.path.isfile(self.lm_no_ok_pattern.cached_filename) == True, "cached file should've been created."
+
+        log_fh = self._setup_log()
+        self._inject_error(log_fh)
+        log_fh.close()
+        status_code = self.lm_no_ok_pattern._run_impl()
+        assert status_code == 2, "Encounterd an error in the log file again. Status code should be 2."
         assert os.path.isfile(self.lm_no_ok_pattern.cached_filename) == True, "cached file should've been created."
 
 
@@ -429,6 +449,68 @@ class TestLogMonitoring(object):
             "test_monitor"
         )
         assert lm.curr_log_filename == file_lst[-1]
+
+
+    def test_curr_log_filename_bdcoe(self):
+        file_tmpl = "cssng_ss_radiobasestation%s.log"
+        dt = datetime(2014, 12, 1)
+        delta = timedelta(days=1)
+        file_lst = [file_tmpl % (dt + (delta * x)).strftime("%Y%m%d") for x in xrange(4)]
+
+        file_tmpl = "cssng_ss_radiobasestationsector%s.log"
+        dt = datetime(2014, 12, 1)
+        delta = timedelta(days=1)
+        file_lst += [file_tmpl % (dt + (delta * x)).strftime("%Y%m%d") for x in xrange(4)]
+
+        for f in file_lst:
+            fh = open(f, "w+")
+            fh.close()
+            time.sleep(1)
+
+        self.lm_bdcoe = LogMonitor(
+            log_filename=None,
+            cached_path=self.CACHED_PATH,
+            warning_pattern=None,
+            critical_pattern="error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure",
+            ok_pattern=None,
+            rotation_pattern="cssng_ss_radiobasestation[0-9]{8}\.log",
+            log_prefix="cssng_ss_radiobasestation[0-9]{8}",
+        )
+        assert self.lm_bdcoe.curr_log_filename  == "cssng_ss_radiobasestation20141204.log"
+
+
+    def test_bdcoe(self):
+
+        file_tmpl = "cssng_ss_radiobasestation%s.log"
+        dt = datetime(2014, 12, 1)
+        delta = timedelta(days=1)
+        file_lst = [file_tmpl % (dt + (delta * x)).strftime("%Y%m%d") for x in xrange(4)]
+
+        for f in file_lst:
+            fh = open(f, "w+")
+            fh.close()
+            time.sleep(1)
+
+        log_filename = file_lst[-1]
+        fh = open(log_filename, "w")
+        self._inject_error(fh)
+        fh.close()
+
+        status_code =  self.lm_bdcoe._run_impl()
+        assert status_code == 2, "encounter an error in log file. Status code should be 2."
+        assert os.path.isfile(self.lm_bdcoe.cached_filename) == True, "cached file should've been created."
+
+        status_code = self.lm_bdcoe._run_impl()
+        assert status_code == 0, "OK_pattern is omitted. Shouldn't fire off old errors."
+
+        fh = open(log_filename, "a")
+        self._inject_error(fh)
+        fh.close()
+        status_code =  self.lm_bdcoe._run_impl()
+        assert status_code == 2, "encounter an error in log file. Status code should be 2."
+        assert os.path.isfile(self.lm_bdcoe.cached_filename) == True, "cached file should've been created."
+
+
 
 
     def test_log__warn(self):

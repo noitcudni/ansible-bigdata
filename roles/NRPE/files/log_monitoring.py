@@ -134,16 +134,25 @@ class LogMonitor(object):
         Get the most recently rotated log
         """
         try:
-            if self.log_filename is not None:
+            if self.log_filename is None:
+                log_path_prefix = "."
+            else:
                 log_path_prefix = "/".join(self.log_filename.split("/")[:-1])
-                if len(log_path_prefix) > 0:
+                if len(log_path_prefix) == 0:
+                    log_path_prefix = "."
+
+            if self.log_filename is not None:
+                if len(log_path_prefix) > 0 and log_path_prefix != ".":
                     log_path = "%s/%s" % (log_path_prefix, self.rotation_pattern)
                 else:
                     log_path = self.rotation_pattern
+                #file_lst = glob.glob(log_path)
             else:
-                log_path = "%s*" % self.log_prefix
+                log_path = self.log_prefix
 
-            file_lst = glob.glob(log_path)
+            file_lst = [x for x in os.listdir(log_path_prefix) if re.search(log_path, x) and os.path.isfile(os.path.join(log_path_prefix, x))]
+
+            #file_lst = glob.glob(log_path)
             if self.log_filename is not None and \
                self.log_filename not in set(file_lst):
                 file_lst.append(self.log_filename)
@@ -297,6 +306,7 @@ class LogMonitor(object):
     def run(self):
         status_code = self._run_impl()
         sys.exit(status_code)
+
 
 
 if __name__ == "__main__":
