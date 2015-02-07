@@ -9,7 +9,7 @@ import sys
 import md5
 import re
 import time
-import glob
+
 import os
 import gzip
 import bz2
@@ -146,13 +146,11 @@ class LogMonitor(object):
                     log_path = "%s/%s" % (log_path_prefix, self.rotation_pattern)
                 else:
                     log_path = self.rotation_pattern
-                #file_lst = glob.glob(log_path)
             else:
                 log_path = self.log_prefix
 
             file_lst = [x for x in os.listdir(log_path_prefix) if re.search(log_path, x) and os.path.isfile(os.path.join(log_path_prefix, x))]
 
-            #file_lst = glob.glob(log_path)
             if self.log_filename is not None and \
                self.log_filename not in set(file_lst):
                 file_lst.append(self.log_filename)
