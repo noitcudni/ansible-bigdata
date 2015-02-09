@@ -9,7 +9,7 @@ import sys
 import md5
 import re
 import time
-
+import glob
 import os
 import gzip
 import bz2
@@ -131,25 +131,24 @@ class LogMonitor(object):
 
     def _get_log_from_logrotation(self, current_log):
         """
-        Get the most recently rotated log
+        Get the most recently rotated log if current_log == False.
+        If current_log == true, return the current log.
         """
         try:
             if self.log_filename is None:
-                log_path_prefix = "."
+                log_path_prefix = self.log_prefix
             else:
                 log_path_prefix = "/".join(self.log_filename.split("/")[:-1])
+                if self.rotation_pattern is not None:
+                    log_path_prefix = log_path_prefix + "/" + self.rotation_pattern
+
                 if len(log_path_prefix) == 0:
                     log_path_prefix = "."
 
-            if self.log_filename is not None:
-                if len(log_path_prefix) > 0 and log_path_prefix != ".":
-                    log_path = "%s/%s" % (log_path_prefix, self.rotation_pattern)
-                else:
-                    log_path = self.rotation_pattern
-            else:
-                log_path = self.log_prefix
 
-            file_lst = [x for x in os.listdir(log_path_prefix) if re.search(log_path, x) and os.path.isfile(os.path.join(log_path_prefix, x))]
+            file_lst = []
+            if self.rotation_pattern is not None:
+                file_lst = [x for x in glob.glob(log_path_prefix) if re.search(self.rotation_pattern, x) and os.path.isfile(x)]
 
             if self.log_filename is not None and \
                self.log_filename not in set(file_lst):
@@ -326,7 +325,7 @@ if __name__ == "__main__":
     parser.add_option('--critical_pattern', dest='critical_pattern', type=str, help="A regular expression that will trigger a warning. To filter more than one expression use or")
     parser.add_option('--ok_pattern', dest='ok_pattern', type=str, help="A regular expression that resets all the warnings and errors. If ok_pattern is ommitted, it will not fire off old errors.")
     parser.add_option('--rotation_pattern', dest='rotation_pattern', type=str, help="A regular expression that describes the commonality among the current log file and the rotated log files.")
-    parser.add_option('--log_prefix', dest='log_prefix', type=str, help="If there isn't a constant current log file, ie. no --log but with --rotation_pattern")
+    parser.add_option('--log_prefix', dest='log_prefix', type=str, help="If there isn't a constant current log file, ie. no --log but with --rotation_pattern. Think ls")
 
     options, args = parser.parse_args()
 

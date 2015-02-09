@@ -27,8 +27,9 @@ class TestLogMonitoring(object):
     nosetests -s test_log_monitoring:TestLogMonitoring.test_log__empty_log_no_cached
     """
 
-    LOG_FILE = "test_monitor.log"
-    CACHED_PATH = "."
+    CURR_PATH = os.path.dirname(os.path.realpath('__file__'))
+    LOG_FILE = "%s/test_monitor.log" % CURR_PATH
+    CACHED_PATH = CURR_PATH
     WARNING_PATTERN = "^WARN.*$"
     CRITICAL_PATTERN = "^FATAL.*$"
     OK_PATTERN = "^SUCCESS.*$"
@@ -76,9 +77,8 @@ class TestLogMonitoring(object):
             critical_pattern="error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure",
             ok_pattern=None,
             rotation_pattern="cssng_ss_radiobasestation[0-9]{8}\.log",
-            log_prefix="cssng_ss_radiobasestation[0-9]{8}",
+            log_prefix="%s/cssng_ss_radiobasestation*" % self.CURR_PATH
         )
-
 
 
     def teardown(self):
@@ -446,9 +446,10 @@ class TestLogMonitoring(object):
             None, self.CACHED_PATH,
             self.WARNING_PATTERN, self.CRITICAL_PATTERN,
             self.OK_PATTERN, self.ROTATION_PATTERN,
-            "test_monitor"
+            "%s/%s" % (self.CURR_PATH, self.ROTATION_PATTERN)
         )
-        assert lm.curr_log_filename == file_lst[-1]
+        print lm.curr_log_filename
+        assert lm.curr_log_filename == "%s/%s" % (self.CURR_PATH, file_lst[-1])
 
 
     def test_curr_log_filename_bdcoe(self):
@@ -467,16 +468,7 @@ class TestLogMonitoring(object):
             fh.close()
             time.sleep(1)
 
-        self.lm_bdcoe = LogMonitor(
-            log_filename=None,
-            cached_path=self.CACHED_PATH,
-            warning_pattern=None,
-            critical_pattern="error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure",
-            ok_pattern=None,
-            rotation_pattern="cssng_ss_radiobasestation[0-9]{8}\.log",
-            log_prefix="cssng_ss_radiobasestation[0-9]{8}",
-        )
-        assert self.lm_bdcoe.curr_log_filename  == "cssng_ss_radiobasestation20141204.log"
+        assert self.lm_bdcoe.curr_log_filename  == "%s/cssng_ss_radiobasestation20141204.log" % self.CURR_PATH
 
 
     def test_bdcoe(self):
