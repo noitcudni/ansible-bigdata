@@ -276,6 +276,11 @@ class LogMonitor(object):
 
 
     def _run_impl(self):
+        # if the log file is missing, just return OK?
+        if self.curr_log_filename is None:
+            print "The actual log file is missing."
+            return 0
+
         logrotated, offset = self._restore_state(self.curr_log_filename)
         # if logrotated is returned as True, it's very like that a log rotation
         # has happened.

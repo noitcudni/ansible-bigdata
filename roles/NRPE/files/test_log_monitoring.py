@@ -472,7 +472,6 @@ class TestLogMonitoring(object):
 
 
     def test_bdcoe(self):
-
         file_tmpl = "cssng_ss_radiobasestation%s.log"
         dt = datetime(2014, 12, 1)
         delta = timedelta(days=1)
@@ -503,6 +502,9 @@ class TestLogMonitoring(object):
         assert os.path.isfile(self.lm_bdcoe.cached_filename) == True, "cached file should've been created."
 
 
+    def test_bdcoe_missing_file(self):
+        status_code =  self.lm_bdcoe._run_impl()
+        assert status_code == 0
 
 
     def test_log__warn(self):
