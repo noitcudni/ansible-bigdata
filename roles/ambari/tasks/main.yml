@@ -40,6 +40,10 @@
   async: 200
   poll: 5
 
+- name: increase agent.task.timeout to 1800 secs (30 minutes)
+  lineinfile: dest="/etc/ambari-server/conf/ambari.properties" regexp='^agent.task.timeout=' line=agent.task.timeout=1800
+  sudo: yes
+
 - name: start ambari-server
   shell: /usr/sbin/ambari-server start
   sudo: yes

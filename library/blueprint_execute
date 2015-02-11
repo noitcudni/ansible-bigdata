@@ -2,6 +2,7 @@
 import json
 from ansible.module_utils.basic import *
 import requests
+import time
 
 TMP_BLUEPRINT_CLUSTER_JSON_FILE = "/tmp/blueprint_cluster.json"
 TMP_BLUEPRINT_COMPONENT_JSON_FILE = "/tmp/blueprint_component.json"
@@ -83,6 +84,7 @@ def execute_blueprint(module):
         headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
     )
 
+    time.sleep(5)
 
     # Push clusters
     cluster_url = AMBARI_CLUSTERS_URL % {
@@ -96,6 +98,10 @@ def execute_blueprint(module):
         auth=("admin", "admin"),
         headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
     )
+
+    # cleanup
+    os.remove(TMP_BLUEPRINT_COMPONENT_JSON_FILE)
+    os.remove(TMP_BLUEPRINT_CLUSTER_JSON_FILE)
 
 
     return {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
