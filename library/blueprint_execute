@@ -89,7 +89,13 @@ def execute_blueprint(module):
         'ambari_host' : ambari_host,
         'cluster_name' : cluster_name,
     }
-    #r2 = requests.post(cluster_url, json.dumps(cluster_creation_json), auth=("admin", "admin"))
+
+    r2 = requests.post(
+        cluster_url, 
+        data="'%s'" % json.dumps(cluster_creation_json),  #Hortonworks is retarded.
+        auth=("admin", "admin"),
+        headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
+    )
 
 
     return {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
@@ -98,7 +104,9 @@ def execute_blueprint(module):
             'r1.reason' : r1.reason,
             'r1.text' : r1.text,
             'r1.status_code' : r1.status_code,
-            #'r2' : r2,
+            'cluster_creation_json' : "'%s'" % cluster_creation_json,
+            'cluster_url' : cluster_url,
+            'r2' : r2.json(),
             }
 
 
