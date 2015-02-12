@@ -41,28 +41,48 @@
   #roles:
     #- { role: couch_web}
 
-#- hosts: Ambari
-  #sudo: True
-  #roles:
-    #- { role: ambari }
-
-- hosts: Slaves
+- hosts: Ambari
+  sudo: True
   roles:
-    - { role: blueprint , groupname: slaves }
+    - { role: ambari }
+
+#- hosts: Slaves
+  #roles:
+    #- { role: blueprint , groupname: slaves }
+  #vars:
+    #hdp:
+      #- DATANODE
+      #- HDFS_CLIENT
+      #- NODEMANAGER
+      #- YARN_CLIENT
+      #- MAPREDUCE2_CLIENT
+      #- ZOOKEEPER_CLIENT
+
+#- hosts: Masters
+  #roles:
+    #- { role: blueprint , groupname: masters }
+  #vars:
+    #hdp:
+      #- NAMENODE
+      #- SECONDARY_NAMENODE
+      #- RESOURCEMANAGER
+      #- HISTORYSERVER
+      #- NAGIOS_SERVER
+      #- GANGLIA_SERVER
+      #- ZOOKEEPER_SERVER
+
+- hosts: Masters
+  roles:
+    - { role: blueprint , groupname: hdp}
   vars:
     hdp:
       - DATANODE
       - HDFS_CLIENT
       - NODEMANAGER
       - YARN_CLIENT
+      - APP_TIMELINE_SERVER
       - MAPREDUCE2_CLIENT
       - ZOOKEEPER_CLIENT
-
-- hosts: Masters
-  roles:
-    - { role: blueprint , groupname: masters }
-  vars:
-    hdp:
       - NAMENODE
       - SECONDARY_NAMENODE
       - RESOURCEMANAGER
@@ -70,6 +90,17 @@
       - NAGIOS_SERVER
       - GANGLIA_SERVER
       - ZOOKEEPER_SERVER
+      - STORM_UI_SERVER
+      - SUPERVISOR
+      - NIMBUS
+      - HIVE_SERVER
+      - HIVE_METASTORE
+      - HIVE_CLIENT
+      - HCAT
+      - TEZ_CLIENT
+      - WEBHCAT_SERVER
+      - MYSQL_SERVER
+      - DRPC_SERVER
 
 
 - hosts: 127.0.0.1
