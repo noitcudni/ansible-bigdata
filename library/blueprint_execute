@@ -100,6 +100,8 @@ def execute_blueprint(module):
     )
 
     # wait until the installation is done.
+    succeeded = False
+    err_msg = None
     if r2.status_code == 202:
         progress_url = r2.json()['href']
         while True:
@@ -109,29 +111,41 @@ def execute_blueprint(module):
                 headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
             )
             status = rest_r.json()['Requests']['request_status']
-            if status == 'COMPLETED' or status == 'FAILED':
+            if status == 'COMPLETED':
+                succeeded = True
+                break
+            elif  status == 'FAILED':
+                err_msg = "Something went horribly wrong during installation. Check Ambari for further details."
                 break
             else:
                 time.sleep(15)
+    else:
+        err_msg = "Error from cluster creation api call. %d" % (r2.status_code)
     
 
     # cleanup
-    #os.remove(TMP_BLUEPRINT_COMPONENT_JSON_FILE)
-    #os.remove(TMP_BLUEPRINT_CLUSTER_JSON_FILE)
+    os.remove(TMP_BLUEPRINT_COMPONENT_JSON_FILE)
+    os.remove(TMP_BLUEPRINT_CLUSTER_JSON_FILE)
 
 
-    return {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
-            'cluster_creation_json': cluster_creation_json, 'blueprint_creation_json': blueprint_creation_json,
-            'ambari_host' : ambari_host, 'cluster_name' : cluster_name, 
-            'r1.text' : r1.text,
-            'r1.status_code' : r1.status_code,
-            'cluster_creation_json' : "'%s'" % cluster_creation_json,
-            'cluster_url' : cluster_url,
-            'r2' : r2.json(),
-            'r2.status_code' : r2.status_code,
-            'r2 type' : str(r2.json().__class__),
-            }
+    if succeeded:
+        r = {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
+             'cluster_creation_json': cluster_creation_json, 'blueprint_creation_json': blueprint_creation_json,
+             'ambari_host' : ambari_host, 'cluster_name' : cluster_name, 
+             'r1.text' : r1.text,
+             'r1.status_code' : r1.status_code,
+             'cluster_creation_json' : "'%s'" % cluster_creation_json,
+             'cluster_url' : cluster_url,
+             'r2' : r2.json(),
+             'r2.status_code' : r2.status_code,
+             'r2 type' : str(r2.json().__class__),
+        }
+    else:
+        r = {'failed': True,
+             'msg' : err_msg
+        }
 
+    return r
 
     
 def main():
