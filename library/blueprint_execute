@@ -1,0 +1,167 @@
+#!/usr/bin/python
+import json
+from ansible.module_utils.basic import *
+import requests
+import time
+
+TMP_BLUEPRINT_CLUSTER_JSON_FILE = "/tmp/blueprint_cluster.json"
+TMP_BLUEPRINT_COMPONENT_JSON_FILE = "/tmp/blueprint_component.json"
+AMBARI_URL = "http://%(ambari_host)s:8080"
+AMBARI_BLUEPRINTS_URL = "http://%(ambari_host)s:8080/api/v1/blueprints/%(blueprint_name)s/?validate_topology=false"
+AMBARI_CLUSTERS_URL = "http://%(ambari_host)s:8080/api/v1/clusters/%(cluster_name)s"
+
+#def _urllib2_auth(top_level_url, username, password, url, json_data):
+    #password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    #password_mgr.add_password(None, top_level_url, username, password)
+    #handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+
+    #opener = urllib2.build_opener(handler)
+    #urllib2.install_opener(opener)
+    #r = urllib2.urlopen(url,data=json.dumps(json_data)) 
+    ##base64string = base64.encodestring('%s.%s' % ('admin', 'admin')).replace('\n', '')
+    ##request.add_header('Authorization', 'Basic %s' % base64string)
+    #return r
+
+
+def execute_blueprint(module):
+    """
+    1) register blueprint /api/v1/blueprints/:blueprintName
+    """
+    blueprint_name = module.params.get('blueprint_name')
+    ambari_password = module.params.get('ambari_password')
+    nagios_contact = module.params.get('nagios_contact')
+    cluster_name = module.params.get('cluster_name')
+    ambari_host = module.params.get('ambari_host')
+
+    # construct cluster json
+    cluster_json_data = None
+    with open(TMP_BLUEPRINT_CLUSTER_JSON_FILE, 'r') as f:
+        cluster_json_data = json.loads(f.read())
+
+    cluster_creation_json = {
+        "blueprint" : blueprint_name,
+        "default_password" : ambari_password,
+        "host_groups" : []
+    }
+    
+    for k,v in cluster_json_data.items():
+        host_group_dict = {
+            "name": k,
+            "hosts": list(dict([("fqdn", x)]) for x in v)
+        }
+        cluster_creation_json['host_groups'].append(host_group_dict)
+
+    # construct blueprint json
+    with open(TMP_BLUEPRINT_COMPONENT_JSON_FILE, 'r') as f:
+        blueprint_json_data = json.loads(f.read())
+         
+    blueprint_creation_json = {
+        "configurations" : [{
+            "nagios-env" : { "nagios_contact" : nagios_contact } 
+        }],
+        "Blueprints" : {
+            "blueprint_name" : blueprint_name,
+            "stack_name": "HDP",
+            "stack_version" : "2.2",
+        },
+        "host_groups" : [],
+    }
+    for k,v in blueprint_json_data.items():
+        blueprint_creation_json['host_groups'].append({
+            "name" : k,
+            "components" : list(dict([("name", x)]) for x in v)
+        })
+
+    #Push blueprint
+    blueprint_url = AMBARI_BLUEPRINTS_URL % {
+        'ambari_host' : ambari_host,
+        'blueprint_name' : blueprint_name,
+    }
+    r1 = requests.post(
+        blueprint_url, 
+        data=json.dumps(json.dumps(blueprint_creation_json)),
+        auth=("admin", "admin"), 
+        headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
+    )
+
+    time.sleep(5)
+
+    # Push clusters
+    cluster_url = AMBARI_CLUSTERS_URL % {
+        'ambari_host' : ambari_host,
+        'cluster_name' : cluster_name,
+    }
+
+    r2 = requests.post(
+        cluster_url, 
+        data="'%s'" % json.dumps(cluster_creation_json),  #Hortonworks is retarded.
+        auth=("admin", "admin"),
+        headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
+    )
+
+    # wait until the installation is done.
+    succeeded = False
+    err_msg = None
+    if r2.status_code == 202:
+        progress_url = r2.json()['href']
+        while True:
+            rest_r = requests.get(
+                progress_url,
+                auth=("admin", "admin"),
+                headers={'X-Requested-By':'ambari-script', 'Content-Type':'application/json'}
+            )
+            status = rest_r.json()['Requests']['request_status']
+            if status == 'COMPLETED':
+                succeeded = True
+                break
+            elif  status == 'FAILED':
+                err_msg = "Something went horribly wrong during installation. Check Ambari for further details."
+                break
+            else:
+                time.sleep(15)
+    else:
+        err_msg = "Error from cluster creation api call. %d" % (r2.status_code)
+    
+
+    # cleanup
+    os.remove(TMP_BLUEPRINT_COMPONENT_JSON_FILE)
+    os.remove(TMP_BLUEPRINT_CLUSTER_JSON_FILE)
+
+
+    if succeeded:
+        r = {'changed': True, 'cluster_json_data': cluster_json_data, 'blueprint_name': blueprint_name, 'ambari-password': ambari_password, 'nagios_contact' : nagios_contact,
+             'cluster_creation_json': cluster_creation_json, 'blueprint_creation_json': blueprint_creation_json,
+             'ambari_host' : ambari_host, 'cluster_name' : cluster_name, 
+             'r1.text' : r1.text,
+             'r1.status_code' : r1.status_code,
+             'cluster_creation_json' : "'%s'" % cluster_creation_json,
+             'cluster_url' : cluster_url,
+             'r2' : r2.json(),
+             'r2.status_code' : r2.status_code,
+             'r2 type' : str(r2.json().__class__),
+        }
+    else:
+        r = {'failed': True,
+             'msg' : err_msg
+        }
+
+    return r
+
+    
+def main():
+    module = AnsibleModule(
+        argument_spec = dict (
+            blueprint_name=dict(required=True),
+            ambari_password=dict(required=True),
+            nagios_contact=dict(required=True),
+            cluster_name=dict(required=True),
+            ambari_host=dict(required=True),
+        ) 
+    )
+    result = execute_blueprint(module)
+    module.exit_json(**result)
+
+
+if __name__ == "__main__":
+    main()
+

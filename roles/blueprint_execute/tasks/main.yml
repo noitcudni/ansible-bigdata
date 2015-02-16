@@ -1,0 +1,4 @@
+- name: execute blueprint
+  local_action: blueprint_execute blueprint_name={{blueprint_name}} ambari_password=admin nagios_contact="{{nagios_contact}}" cluster_name="{{cluster_name}}" ambari_host="{{groups['Ambari'][0]}}"
+  async: 4000
+  poll: 30

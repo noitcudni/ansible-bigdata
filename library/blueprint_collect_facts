@@ -1,0 +1,92 @@
+#!/usr/bin/python
+import json
+from ansible.module_utils.basic import *
+
+TMP_BLUEPRINT_CLUSTER_JSON_FILE = "/tmp/blueprint_cluster.json"
+TMP_BLUEPRINT_COMPONENT_JSON_FILE = "/tmp/blueprint_component.json"
+
+"""
+
+"""
+
+def read_json(json_filename):
+    try:
+        with open(json_filename, 'r') as f:
+            try:
+                json_r = json.loads(f.read())
+            except ValueError:
+                json_r = {}
+    except IOError:
+        # The file hasn't been created. No worries.
+        json_r = {}
+    return json_r
+
+
+def collect_blueprint(module):
+    """
+    Two output file:
+    blueprint_component.json 
+    {
+        host_group_name : [
+            component1,
+            component2,
+        ], 
+        ...
+    }
+
+    blueprint_cluster.json
+    {
+        host_group_name : [
+            host1,
+            host2,
+        ]
+    }
+    """
+    group_name = module.params.get('groupname')
+    component_lst = json.loads(module.params.get('components').replace("'", '"'))
+    host_name = module.params.get('hostname')
+
+    # Read in the cluster info
+    cluster_json = read_json(TMP_BLUEPRINT_CLUSTER_JSON_FILE)
+    if group_name not in cluster_json:
+        cluster_json[group_name] = []
+    cluster_set = set(cluster_json[group_name])
+    cluster_set.add(host_name)
+    cluster_json[group_name]=list(cluster_set)
+
+
+    # Read in the blueprint info
+    blueprint_json = read_json(TMP_BLUEPRINT_COMPONENT_JSON_FILE)
+    if group_name not in blueprint_json:
+        blueprint_json[group_name] = []
+
+    blueprint_set = set(blueprint_json[group_name])
+    for comp in component_lst:
+        blueprint_set.add(comp)
+    blueprint_json[group_name] = list(blueprint_set)
+
+    # Write out the cluster info
+    with open(TMP_BLUEPRINT_CLUSTER_JSON_FILE, "w") as f:
+        f.write(json.dumps(cluster_json))
+
+    # Write out the component info
+    with open(TMP_BLUEPRINT_COMPONENT_JSON_FILE, "w") as f:
+        f.write(json.dumps(blueprint_json))
+
+    return {'changed': True, 'cluster_json': cluster_json, 'blueprint_json': blueprint_json }
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict (
+            hostname=dict(required=True),
+            groupname=dict(required=True),
+            components=dict(required=True),
+        ) 
+    )
+    result = collect_blueprint(module)
+    module.exit_json(**result)
+
+
+if __name__ == "__main__":
+    main()
