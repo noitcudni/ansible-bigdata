@@ -1,8 +1,8 @@
-#- hosts: all
-  #sudo: True
-  #roles:
-    #- { role: common }
-    #- { role: java }
+- hosts: all
+  sudo: True
+  roles:
+    - { role: common }
+    - { role: java }
 
 
 #- hosts: NRPE
@@ -41,10 +41,6 @@
   #roles:
     #- { role: couch_web}
 
-- hosts: Ambari
-  sudo: True
-  roles:
-    - { role: ambari }
 
 #- hosts: Slaves
   #roles:
@@ -71,41 +67,57 @@
       #- GANGLIA_SERVER
       #- ZOOKEEPER_SERVER
 
-- hosts: Masters
-  roles:
-    - { role: blueprint , groupname: hdp}
-  vars:
-    hdp:
-      - DATANODE
-      - HDFS_CLIENT
-      - NODEMANAGER
-      - YARN_CLIENT
-      - APP_TIMELINE_SERVER
-      - MAPREDUCE2_CLIENT
-      - ZOOKEEPER_CLIENT
-      - NAMENODE
-      - SECONDARY_NAMENODE
-      - RESOURCEMANAGER
-      - HISTORYSERVER
-      - NAGIOS_SERVER
-      - GANGLIA_SERVER
-      - ZOOKEEPER_SERVER
-      - STORM_UI_SERVER
-      - SUPERVISOR
-      - NIMBUS
-      - HIVE_SERVER
-      - HIVE_METASTORE
-      - HIVE_CLIENT
-      - HCAT
-      - TEZ_CLIENT
-      - WEBHCAT_SERVER
-      - MYSQL_SERVER
-      - DRPC_SERVER
+#- hosts: Ambari
+  #sudo: True
+  #roles:
+    #- { role: ambari }
+
+#- hosts: Masters
+  #roles:
+    #- { role: blueprint , groupname: hdp}
+  #vars:
+    #hdp:
+      #- DATANODE
+      #- HDFS_CLIENT
+      #- NODEMANAGER
+      #- YARN_CLIENT
+      #- APP_TIMELINE_SERVER
+      #- MAPREDUCE2_CLIENT
+      #- ZOOKEEPER_CLIENT
+      #- NAMENODE
+      #- SECONDARY_NAMENODE
+      #- RESOURCEMANAGER
+      #- HISTORYSERVER
+      #- NAGIOS_SERVER
+      #- GANGLIA_SERVER
+      #- ZOOKEEPER_SERVER
+      #- STORM_UI_SERVER
+      #- SUPERVISOR
+      #- NIMBUS
+      #- HIVE_SERVER
+      #- HIVE_METASTORE
+      #- HIVE_CLIENT
+      #- HCAT
+      #- TEZ_CLIENT
+      #- WEBHCAT_SERVER
+      #- MYSQL_SERVER
+      #- DRPC_SERVER
 
 
-- hosts: 127.0.0.1
+#- hosts: 127.0.0.1
+  #roles:
+    #- { role: blueprint_execute,
+        #blueprint_name: bdcoe,
+        #cluster_name: radiohead,
+        #nagios_contact: lc024q@att.com }
+
+- hosts: Collectd
+  sudo: True
   roles:
-    - { role: blueprint_execute,
-        blueprint_name: bdcoe,
-        cluster_name: radiohead,
-        nagios_contact: lc024q@att.com }
+    - { role: collectd }
+
+- hosts: Graphite
+  sudo: True
+  roles:
+    - { role: graphite }
+
