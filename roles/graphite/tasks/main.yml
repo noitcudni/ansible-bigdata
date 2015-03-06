@@ -2,6 +2,9 @@
   yum: name={{item}} state=installed
   sudo: yes
   with_items:
+    - libffi-devel
+    - mysql-server
+    - mysql-devel
     - python-devel
     - python-setuptools
     - nginx
@@ -72,6 +75,8 @@
     - django-tagging
     - pytz
     - uwsgi
+    - MySQL-python
+    - cairocffi
 
 - pip: name=https://github.com/graphite-project/ceres/tarball/master
   sudo: yes
@@ -100,6 +105,9 @@
   with_items:
     - local_settings.py.j2
 
+- name: create database
+  mysql_db: name={{db_name}} state=present
+  sudo: yes
 
 # sudo carbon-aggregator.py --config=/var/lib/graphite/conf/carbon.conf start
 # sudo carbon-cache.py --config=/var/lib/graphite/conf/carbon.conf start
