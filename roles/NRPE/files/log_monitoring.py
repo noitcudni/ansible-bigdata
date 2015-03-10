@@ -121,7 +121,7 @@ class LogMonitor(object):
     def _gen_checksum(self, log_filename, offset):
         try:
             with open(log_filename, "r") as f:
-                content = f.read(offset)
+                content = "%s|%s" % (log_filename, f.read(offset))
                 m = md5.new(content)
                 m.update(content)
                 return m.hexdigest()
@@ -264,7 +264,6 @@ class LogMonitor(object):
 
 
     def _tally_results(self):
-        print "OK"
         status_code = 0 #OK
         if len(self.critical_lst) > 0:
             status_code = 2
@@ -282,8 +281,7 @@ class LogMonitor(object):
             return 0
 
         logrotated, offset = self._restore_state(self.curr_log_filename)
-        # if logrotated is returned as True, it's very like that a log rotation
-        # has happened.
+        # if logrotated is returned as True, it's very likely that a log rotation has happened.
 
         if self.rotation_pattern is not None:
             if logrotated is True:
@@ -318,6 +316,10 @@ if __name__ == "__main__":
     If no new log entires match the --ok_pattern, The previous error and warning conditions will get alerted again.
 
     Example: ./log_monitoring.py --log /tmp/test.log --warning_pattern "^WARN*"  --critical_pattern "^FATAL*" --ok_pattern "^SUCCESS*" --rotation_pattern "test.log*"
+
+    log_monitoring.py --log_prefix /opt/data/stage02/data_ingestion/log/err/cmp* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern cmp[0-9]{8}.log
+
+    log_monitoring.py --log_prefix /opt/data/stage02/data_ingestion/log/err/wifi_phone* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern wifi_phone[0-9]{8}.log
 
     If --log is not present but --rotation_pattern is supplied, it assumes that the current log's name doesn't stay constant. For instance, foo-[timestamp].log.
     If --log is present and --rotation_pattern is supplied, it assumes that the current log is constant, while the log rotated logs are described by --rotation_pattern.
