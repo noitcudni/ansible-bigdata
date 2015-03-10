@@ -271,6 +271,8 @@ class LogMonitor(object):
         elif len(self.warning_lst) > 0:
             status_code = 1
             self._print_content(self.warning_lst)
+        else:
+            print "OK"
         return status_code
 
 
@@ -317,9 +319,9 @@ if __name__ == "__main__":
 
     Example: ./log_monitoring.py --log /tmp/test.log --warning_pattern "^WARN*"  --critical_pattern "^FATAL*" --ok_pattern "^SUCCESS*" --rotation_pattern "test.log*"
 
-    log_monitoring.py --log_prefix /opt/data/stage02/data_ingestion/log/err/cmp* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern cmp[0-9]{8}.log
+    log_monitoring.py --log_prefix=/opt/data/stage02/data_ingestion/log/err/cmp* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern cmp[0-9]{8}.log
 
-    log_monitoring.py --log_prefix /opt/data/stage02/data_ingestion/log/err/wifi_phone* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern wifi_phone[0-9]{8}.log
+    log_monitoring.py --log_prefix=/opt/data/stage02/data_ingestion/log/err/wifi_phone* --critical_pattern "error|err|Err|Error|ERROR|FAIL|fail|Fail|Failure|FAILURE|failure" --cached_path /home/lc024q/local/tmp --rotation_pattern wifi_phone[0-9]{8}.log
 
     If --log is not present but --rotation_pattern is supplied, it assumes that the current log's name doesn't stay constant. For instance, foo-[timestamp].log.
     If --log is present and --rotation_pattern is supplied, it assumes that the current log is constant, while the log rotated logs are described by --rotation_pattern.
