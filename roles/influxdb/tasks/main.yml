@@ -1,0 +1,64 @@
+- yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - golang
+    - zlib.i686
+    - bzip2-libs.i686
+    - libgcc.i686
+
+- name: Install Influxdb
+  yum: name=https://s3.amazonaws.com/influxdb/influxdb-0.8.7-1.i686.rpm state=present
+  sudo: yes
+
+- name: point current to 0.8.7
+  file: src=/opt/influxdb/versions/0.8.7 dest=/opt/influxdb/current state=link force=yes
+  sudo: yes
+
+- name: symlink config.toml
+  file: src=/opt/influxdb/versions/0.8.7/config.toml dest=/opt/influxdb/shared/config.toml state=link force=yes
+  sudo: yes
+
+#- stat: path=/opt/influxdb-collectd-proxy
+  #register: repo_checkout
+  #sudo: yes
+
+#- name: check out git repo
+  #shell: 'sudo setfacl -m u:{{username}}:rw $SSH_AUTH_SOCK;
+          #sudo setfacl -m u:{{username}}:x $(dirname $SSH_AUTH_SOCK);
+          #sudo -Eu {{username}} bash -c "
+           #cd /opt;
+           #git clone  git@github.com:hoonmin/influxdb-collectd-proxy.git /opt/influxdb-collectd-proxy;"'
+  #when: repo_checkout.stat.exists == False
+  #sudo: yes
+  #async: 1000
+  #poll: 10
+
+#- name: get go dependencies
+  #shell: make get
+  #sudo: yes
+  #args:
+    #chdir: /opt/influxdb-collectd-proxy
+
+#- name: use influxdb v0.8.7
+  #shell: 'git checkout v0.8.7'
+  #sudo: yes
+  #args:
+    #chdir: /opt/influxdb-collectd-proxy/src/github.com/influxdb/influxdb
+
+#- name: compile influxdb-collectd-proxy
+  #shell: make
+  #sudo: yes
+  #args:
+    #chdir: /opt/influxdb-collectd-proxy
+
+- name: Start influxdb after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - influxdb
+
+- name: Start influxdb
+  service: name=influxdb state=started
+  sudo: yes
+
+

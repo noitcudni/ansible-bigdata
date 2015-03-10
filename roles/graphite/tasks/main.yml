@@ -15,6 +15,16 @@
     - pixman
     - pixman-devel
 
+- name: Start mysqld after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - mysqld
+
+- name: Start mysqld
+  service: name=mysqld state=started
+  sudo: yes
+
 - easy_install: name=pip
   sudo: yes
 
@@ -99,11 +109,11 @@
     - storage-aggregation.conf
     - aggregation-rules.conf
 
-- name: configure local)settings.py
+- name: configure local_settings.py
   template: src={{ item }}.j2 dest=/usr/lib/python2.6/site-packages/graphite/{{item}}
   sudo: yes
   with_items:
-    - local_settings.py.j2
+    - local_settings.py
 
 - name: create database
   mysql_db: name={{db_name}} state=present

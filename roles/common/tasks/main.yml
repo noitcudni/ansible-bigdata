@@ -9,6 +9,7 @@
     - ntp
     - ntpdate.x86_64
     - libselinux-python
+    - git
   #environment:
     #http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
