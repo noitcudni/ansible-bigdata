@@ -48,10 +48,10 @@
   sudo: yes
 
 - name: configure collectd.conf
-  template: src={{item}} dest=/etc/{{item}}
+  template: src={{item}}.j2 dest=/etc/{{item}}
   sudo: yes
   with_items:
-    - collectd.conf.j2
+    - collectd.conf
 
 - name: Start collectd after reboot
   shell: "/sbin/chkconfig --add {{item}}"
