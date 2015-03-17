@@ -669,7 +669,7 @@ LoadPlugin users
 #</Plugin>
 
 <Plugin network>
-  Server "127.0.0.1" "25826"
+  Server "{{groups['Influxdb'][0]}}" "25826"
 </Plugin>
 
 #<Plugin network>
