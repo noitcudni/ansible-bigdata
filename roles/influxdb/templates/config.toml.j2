@@ -50,7 +50,7 @@ read-timeout = "5s"
   enabled = true
   address = "127.0.0.1" # If not set, is actually set to bind-address.
   port = 25826
-  database = "collectd"
+  database = "{{influxdb.db_name}}"
   # types.db can be found in a collectd installation or on github:
   # https://github.com/collectd/collectd/blob/master/src/types.db
   typesdb = "/usr/share/collectd/types.db" # The path to the collectd types.db file

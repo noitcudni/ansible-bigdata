@@ -3,11 +3,38 @@
   with_items:
     - nginx
 
-- get_url: url=http://grafanarel.s3.amazonaws.com/grafana-{{version}}.tar.gz dest=/opt/graphana-{{version}}.tar.gz
+- get_url: url=http://grafanarel.s3.amazonaws.com/grafana-{{version}}.tar.gz dest=/opt/grafana-{{version}}.tar.gz
   sudo: yes
 
-- name: untar graphana's tarball
-  shell: tar xvzf /opt/graphana-{{version}}.tar.gz
+- name: untar grafana's tarball
+  shell: tar xvzf /opt/grafana-{{version}}.tar.gz
   sudo: yes
   args:
     chdir: /opt
+
+- name: setup config.js
+  template: src={{item}}.j2 dest=/opt/grafana-{{version}}/{{item}}
+  sudo: yes
+  with_items:
+    - config.js
+
+- name: remove default
+  file: path=/etc/nginx/conf.d/default.conf state=absent
+  sudo: yes
+
+- name: setup nginx for grafana
+  template: src={{item}}.j2 dest=/etc/nginx/conf.d/{{item}}
+  sudo: yes
+  with_items:
+    - grafana.conf
+
+- name: Start nginx after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - nginx
+
+- name: Start nginx
+  service: name=nginx state=started
+  sudo: yes
+

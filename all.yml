@@ -116,11 +116,16 @@
   roles:
     - { role: collectd }
 
-- hosts: Graphite
+- hosts: Influxdb
   sudo: True
   roles:
     - { role: influxdb }
+
+- hosts: Grafana
+  sudo: True
+  roles:
     - { role: graphana }
+
 
 #- hosts: Graphite
   #sudo: True
