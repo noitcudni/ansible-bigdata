@@ -14,7 +14,7 @@
   file: src=/opt/influxdb/versions/0.8.7 dest=/opt/influxdb/current state=link force=yes
   sudo: yes
 
-- name: symlink config.toml
+- name: config.toml
   template: src={{item}}.j2 dest=/opt/influxdb/shared/{{item}}
   sudo: yes
   with_items:
@@ -34,4 +34,4 @@
   shell: sleep 5
 
 - name: create the collectd database in influxdb
-  shell: curl "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"collectd\"}"
+  shell: 'curl "http://localhost:8086/db?u=root&p=root" -d "{\"name\": \"collectd\"}"'

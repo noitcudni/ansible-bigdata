@@ -119,8 +119,7 @@
 - hosts: Graphite
   sudo: True
   roles:
-    - { role: ssh_forward_agent , username: root}
-    - { role: influxdb, username: root }
+    - { role: influxdb }
     - { role: graphana }
 
 #- hosts: Graphite
