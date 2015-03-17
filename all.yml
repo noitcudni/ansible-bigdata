@@ -124,7 +124,7 @@
 - hosts: Grafana
   sudo: True
   roles:
-    - { role: graphana }
+    - { role: grafana }
 
 
 #- hosts: Graphite
