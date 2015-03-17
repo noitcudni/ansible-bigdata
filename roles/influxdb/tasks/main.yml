@@ -1,0 +1,37 @@
+- yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - golang
+    - zlib.i686
+    - bzip2-libs.i686
+    - libgcc.i686
+
+- name: Install Influxdb
+  yum: name=https://s3.amazonaws.com/influxdb/influxdb-0.8.7-1.i686.rpm state=present
+  sudo: yes
+
+- name: point current to 0.8.7
+  file: src=/opt/influxdb/versions/0.8.7 dest=/opt/influxdb/current state=link force=yes
+  sudo: yes
+
+- name: config.toml
+  template: src={{item}}.j2 dest=/opt/influxdb/shared/{{item}}
+  sudo: yes
+  with_items:
+    - config.toml
+
+- name: Start influxdb after reboot
+  shell: "/sbin/chkconfig --add {{item}}"
+  sudo: yes
+  with_items:
+    - influxdb
+
+- name: Start influxdb
+  service: name=influxdb state=started
+  sudo: yes
+
+- name: Sleep awhile to make sure that influxdb is up
+  shell: sleep 5
+
+- name: create the collectd database in influxdb
+  shell: 'curl "http://localhost:8086/db?u={{influxdb.username}}&p={{influxdb.password}}" -d "{\"name\": \"{{influxdb.db_name}}\"}"'

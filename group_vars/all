@@ -9,3 +9,8 @@ kafka:
 
 zookeeper:
   clientport: 2182 
+
+influxdb:
+  db_name: collectd
+  username: root
+  password: root
