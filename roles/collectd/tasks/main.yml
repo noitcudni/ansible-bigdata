@@ -1,51 +1,7 @@
-- name: Install the required packages for collectd
+- name: Install collectd
   yum: name={{item}} state=installed
   with_items:
-    - libcurl
-    - libcurl-devel
-    - rrdtool
-    - rrdtool-devel
-    - rrdtool-perl
-    - libgcrypt-devel
-    - gcc
-    - make
-    - gcc-c++
-    - perl-ExtUtils-Embed
-    - perl-ExtUtils-MakeMaker
-
-- name: download collected source
-  get_url: url=http://collectd.org/files/collectd-{{version}}.tar.gz dest=/tmp/collectd-{{version}}.tar.gz
-
-- name: untar collectd source
-  shell: tar xvzf /tmp/collectd-{{version}}.tar.gz
-  args:
-    chdir: /tmp
-
-- name: run configure
-  shell: ./configure  --prefix=/usr --sysconfdir=/etc --localstatedir=/var --libdir=/usr/lib --mandir=/usr/share/man
-  sudo: yes
-  args:
-    chdir: /tmp/collectd-{{version}}
-
-- name: compile
-  shell: make
-  sudo: yes
-  args:
-    chdir: /tmp/collectd-{{version}}
-
-- name: install
-  shell: make install
-  sudo: yes
-  args:
-    chdir: /tmp/collectd-{{version}}
-
-- name: copy the default init.d script
-  shell: cp /tmp/collectd-{{version}}/contrib/redhat/init.d-collectd /etc/init.d/collectd
-  sudo: yes
-
-- name: set the coorect permission
-  file: path=/etc/init.d/collectd mode=0755
-  sudo: yes
+    - collectd
 
 - name: configure collectd.conf
   template: src={{item}}.j2 dest=/etc/{{item}}
