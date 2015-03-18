@@ -34,7 +34,8 @@
     http_proxy: http://autoproxy.sbc.com/one-guest.pac
 
 - name: symlink /usr/java/default for good measure
-  file: src=/usr/java/jdk1.8.0_25 dest={{java_home}} state=link
+  file: src=/usr/java/jdk1.{{jdk_version.split('u')[0]}}.0_{{jdk_version.split('u')[1]}} dest={{java_home}} state=link
+  #file: src=/usr/java/jdk1.7.0_71 dest={{java_home}} state=link
   sudo: yes
 
 - shell: "grep JAVA_HOME /etc/environment"
