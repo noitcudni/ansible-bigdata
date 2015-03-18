@@ -48,7 +48,7 @@ read-timeout = "5s"
   # Configure the collectd api
   [input_plugins.collectd]
   enabled = true
-  address = "127.0.0.1" # If not set, is actually set to bind-address.
+  address = "{{groups['Influxdb'][0]}}" # If not set, is actually set to bind-address.
   port = 25826
   database = "{{influxdb.db_name}}"
   # types.db can be found in a collectd installation or on github:
