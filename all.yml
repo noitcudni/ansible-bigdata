@@ -127,8 +127,4 @@
     - { role: grafana }
 
 
-#- hosts: Graphite
-  #sudo: True
-  #roles:
-    #- { role: graphite }
 
