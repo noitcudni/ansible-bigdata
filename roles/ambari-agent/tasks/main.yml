@@ -1,0 +1,29 @@
+- name: Install openssl
+  yum: name='openssl-1.0.1e-30.el6_6.5' state=installed
+  sudo: yes
+
+- name: Install ambari agents on all the hosts that are going to join the cluster
+  yum: name='ambari-agent' state=installed
+  sudo: yes
+
+- debug: var=groups['Ambari']
+
+- name: edit ambari-agent.ini
+  lineinfile: dest="/etc/ambari-agent/conf/ambari-agent.ini" regexp='^hostname=' line=hostname={{groups['Ambari'][0]}}
+  sudo: yes
+
+- name: is ambari-agent running?
+  shell: ambari-agent status
+  sudo: yes
+  register: is_ambari_running
+  ignore_errors:  yes
+
+- debug: var=is_ambari_running
+
+- name: start ambari-agent if it's not running
+  shell: ambari-agent start
+  sudo: yes
+  when: is_ambari_running.rc != 0
+  async: 100
+  poll: 5
+

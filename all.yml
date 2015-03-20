@@ -67,10 +67,16 @@
       #- GANGLIA_SERVER
       #- ZOOKEEPER_SERVER
 
-#- hosts: Ambari
-  #sudo: True
-  #roles:
-    #- { role: ambari }
+- hosts: Ambari
+  sudo: True
+  roles:
+    - { role: ambari }
+
+- hosts: Ambari-Agent
+  sudo: True
+  roles:
+    - { role: ambari-agent }
+
 
 #- hosts: Masters
   #roles:
@@ -111,20 +117,20 @@
         #cluster_name: radiohead,
         #nagios_contact: lc024q@att.com }
 
-- hosts: Collectd
-  sudo: True
-  roles:
-    - { role: collectd }
+#- hosts: Collectd
+  #sudo: True
+  #roles:
+    #- { role: collectd }
 
-- hosts: Influxdb
-  sudo: True
-  roles:
-    - { role: influxdb }
+#- hosts: Influxdb
+  #sudo: True
+  #roles:
+    #- { role: influxdb }
 
-- hosts: Grafana
-  sudo: True
-  roles:
-    - { role: grafana }
+#- hosts: Grafana
+  #sudo: True
+  #roles:
+    #- { role: grafana }
 
 
 
