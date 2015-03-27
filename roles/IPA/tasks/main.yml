@@ -1,0 +1,25 @@
+- debug: var=hostvars[inventory_hostname]
+
+- template: src={{ item }}.j2 dest=/etc/hosts
+  sudo: yes
+  with_items:
+    - etc_hosts
+
+- name: Install IPA related packages
+  yum: name={{item}} state=installed
+  with_items:
+    - ipa-server
+    - bind
+    - bind-dyndb-ldap
+  sudo: yes
+
+- debug: var=dns_forwarder_ip
+
+- name: Setup IPA
+  #command: ipa-server-install -a {{ password }} --hostname={{ hostname }} -r {{ kerberos_realm_name }} -p {{ directory_manager_password }} -n {{ domain_search }} -U --setup-dns --forwarder={{ dns_forwarder_ip }}
+  command: >
+    {% if dns_forwarder_ip is defined %}
+    ipa-server-install -a {{ ipa_password }} --hostname={{ hostname }} -r {{ kerberos_realm_name }} -p {{ directory_manager_password }} -n {{ domain_search }} -U --setup-dns --forwarder={{dns_forwarder_ip}}
+    {% else %}
+    ipa-server-install -a {{ ipa_password }} --hostname={{ hostname }} -r {{ kerberos_realm_name }} -p {{ directory_manager_password }} -n {{ domain_search }} -U --setup-dns --no-forwarder
+    {% endif %}

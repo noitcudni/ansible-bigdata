@@ -1,0 +1,7 @@
+ipa_password: attbdcoe
+directory_manager_password: attbdcoe
+hostname: "{{ ansible_fqdn }}"
+domain_search: >
+  {{ ".".join(ansible_fqdn.split(".")[1:]) }}
+kerberos_realm_name: "{{ domain_search|upper }}"
+#dns_forwarder_ip:

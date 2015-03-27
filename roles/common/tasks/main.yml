@@ -38,6 +38,9 @@
   sudo: yes
   shell: "yum clean all"
 
+- shell: "yum update -y"
+  sudo: yes
+
 - name: yum install some useful stuff
   sudo: yes
   yum: name={{item}} state=installed
