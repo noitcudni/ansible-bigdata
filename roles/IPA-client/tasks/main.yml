@@ -1,0 +1,7 @@
+- name: Install ipa-client
+  yum: name={{item}} state=installed
+  sudo: yes
+  with_items:
+    - ipa-client
+
+
