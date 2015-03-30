@@ -2,6 +2,10 @@
   sudo: yes
   shell: "ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime"
 
+- name: upgrade all packages
+  yum: name=* state=latest
+  sudo: yes
+
 - name: Common things across all nodes
   sudo: yes
   yum: name={{item}} state=installed
@@ -37,9 +41,6 @@
 - name: Clear yum caches so stuff will not break
   sudo: yes
   shell: "yum clean all"
-
-- shell: "yum update -y"
-  sudo: yes
 
 - name: yum install some useful stuff
   sudo: yes

@@ -14,3 +14,6 @@ influxdb:
   db_name: collectd
   username: root
   password: root
+
+IPA:
+  admin_password: attbdcoe

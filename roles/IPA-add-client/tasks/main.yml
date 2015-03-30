@@ -1,0 +1,10 @@
+# Run this on IPA Server
+- debug: var=hostvars
+
+- shell: ipa dnsrecord-add {{ ".".join(ansible_fqdn.split(".")[1:]) }} {{ hostvars[item]["ansible_hostname"] }} --a-rec {{hostvars[item]["ansible_"+hostvars[item].interface]['ipv4']['address']}}
+  sudo: yes
+  with_items: groups['IPAClient']
+  register: command_result
+  failed_when: >
+    "ipa: ERROR: no modifications to be performed" != command_result.stderr
+

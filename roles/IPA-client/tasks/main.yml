@@ -4,4 +4,15 @@
   with_items:
     - ipa-client
 
+- lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-{{hostvars[inventory_hostname].interface}} line='DSN{{item.0}}={{item.1}}' state=present
+  sudo: yes
+  with_indexed_items: groups['IPA']
 
+- service: name=network state=restarted args={{hostvars[inventory_hostname].interface}}
+  sudo: yes
+
+- shell: ipa-client-install --domain=vagrant-local.com --server=bdcoe.vagrant-local.com --mkhomedir -w {{ IPA.admin_password }} -p admin -U
+  sudo: yes
+  register: command_result
+  failed_when: >
+    "IPA client is already configured on this system." not in command_result.stderr
