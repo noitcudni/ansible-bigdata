@@ -1,14 +1,15 @@
 - hosts: all
   sudo: True
   gather_facts: True
-  #roles:
-    #- { role: common }
-    #- { role: java }
+  roles:
+    - { role: common }
+    - { role: java }
 
 - hosts: IPA
   sudo: True
+  gather_facts: True
   roles:
-    #- { role: IPA }
+    - { role: IPA }
     - { role: IPA-add-client }
 
 - hosts: IPAClient

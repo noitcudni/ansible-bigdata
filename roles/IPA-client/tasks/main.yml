@@ -14,5 +14,9 @@
 - shell: ipa-client-install --domain=vagrant-local.com --server=bdcoe.vagrant-local.com --mkhomedir -w {{ IPA.admin_password }} -p admin -U
   sudo: yes
   register: command_result
-  failed_when: >
-    "IPA client is already configured on this system." not in command_result.stderr
+  ignore_errors: True
+
+- fail: msg=command_result.stderr
+  when: >
+    command_result.rc == 1 and "IPA client is already configured on this system." not in command_result.stderr
+

@@ -23,14 +23,23 @@
     {% else %}
     ipa-server-install -a {{ ipa_password }} --hostname={{ hostname }} -r {{ kerberos_realm_name }} -p {{ directory_manager_password }} -n {{ domain_search }} -U --setup-dns --no-forwarder
     {% endif %}
+  register: command_result
+  ignore_errors: True
 
+- fail: msg=command_result.stderr
+  when: >
+    command_result.rc == 1 and "IPA server is already configured on this system." not in command_result.stderr
 
-- name: Reboot
-  command: /sbin/reboot
-  sudo: yes
+#- name: Reboot
+  #command: /sbin/reboot
+  #sudo: yes
 
-- name: Wait for the IPA server to reboot
-  local_action: wait_for host={{ inventory_hostname }} port=22
+#- name: Wait for the IPA server to reboot
+  ##local_action: wait_for host={{ inventory_hostname }} port=22 delay=10
+  #wait_for: host={{ inventory_hostname }} port=22 delay=10
+
+- name: wait a bit
+  shell: sleep 20
 
 - shell: klist | grep admin
   register: do_kinit
