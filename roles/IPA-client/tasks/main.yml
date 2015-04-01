@@ -20,3 +20,5 @@
   when: >
     command_result.rc == 1 and "IPA client is already configured on this system." not in command_result.stderr
 
+- shell: authconfig --enablemkhomedir --update
+  sudo: yes

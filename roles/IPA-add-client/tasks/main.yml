@@ -4,6 +4,24 @@
   sudo: yes
   with_items: groups['IPAClient']
   register: command_result
-  failed_when: >
-    "ipa: ERROR: no modifications to be performed" != command_result.stderr
+  ignore_errors: True
+
+# todo
+# loop through command_result
+# if not (item.rc == 1 and "ipa: ERROR: no modifications to be performed" != item.stderr ) error out.
+
+#- fail: msg=command_result.stderr
+#- command: >
+    #{% if item.rc == 0 %}
+      #/bin/true;
+    #{% elif item.rc ==1 and  "ipa: ERROR: no modifications to be performed" != item.stderr %}
+      #/bin/true;
+    #{% else %}
+      #/bin/false;
+    #{% endif %}
+  #with_items:
+    #command_result.results
+
+
+
 
