@@ -1,0 +1,11 @@
+- hosts: Apaches
+  sudo: True
+  roles:
+    - common
+    - apache2
+
+- hosts: LBs
+  sudo: True
+  roles:
+    - common
+    - haproxy

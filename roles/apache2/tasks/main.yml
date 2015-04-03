@@ -1,0 +1,7 @@
+- name: install apache2
+  yum: name=httpd state=present
+- name: Ensure Apache is started and enabled on boot.
+  service:
+    name: httpd
+    state: started
+    enabled: yes
